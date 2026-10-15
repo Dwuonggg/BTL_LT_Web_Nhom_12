@@ -7,23 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Admin\Views\Dashboard\" />
-    <Folder Include="Areas\Admin\Views\Food\" />
-    <Folder Include="Areas\Admin\Views\Category\" />
-    <Folder Include="Areas\Admin\Views\FoodOption\" />
-    <Folder Include="Areas\Admin\Views\Combo\" />
-    <Folder Include="Areas\Admin\Views\Customer\" />
-    <Folder Include="Areas\Admin\Views\Banner\" />
-    <Folder Include="Areas\Admin\Views\OpeningHour\" />
-    <Folder Include="Areas\Admin\Views\Voucher\" />
-    <Folder Include="Areas\Admin\Views\Order\" />
-    <Folder Include="Controllers\" />
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Menu\" />
     <Folder Include="Views\Combo\" />
     <Folder Include="Views\Cart\" />
     <Folder Include="Views\Checkout\" />
-    <Folder Include="Views\Account\" />
     <Folder Include="Views\Order\" />
     <Folder Include="Views\Promotion\" />
   </ItemGroup>

@@ -1,0 +1,46 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Danh sách tài khoản khách hàng</h5>
+        <input type="text" class="form-control form-control-sm" placeholder="Tìm tên, SĐT, Email..." style="width: 250px;" />
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Họ và tên</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Tổng đơn đã đặt</th>
+                <th>Ngày đăng ký</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Nguyễn Văn A</strong></td>
+                <td>0912 345 678</td>
+                <td>nguyenvana@gmail.com</td>
+                <td>8 đơn</td>
+                <td>10/01/2026</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-dark">Chi tiết</button>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Trần Thị B</strong></td>
+                <td>0987 654 321</td>
+                <td>tranthib@gmail.com</td>
+                <td>3 đơn</td>
+                <td>15/03/2026</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-dark">Chi tiết</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

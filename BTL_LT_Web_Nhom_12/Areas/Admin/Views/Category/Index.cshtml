@@ -1,0 +1,111 @@
+﻿@model List<BTL_LT_Web_Nhom_12.Models.Menu.Category>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Danh mục sản phẩm";
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Quản lý danh mục món ăn</h5>
+
+        <a asp-area="Admin"
+           asp-controller="Category"
+           asp-action="Create"
+           class="btn btn-danger">
+            + Thêm danh mục
+        </a>
+    </div>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>STT</th>
+                <th>Tên danh mục</th>
+                <th>Số lượng món</th>
+                <th>Mô tả</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int stt = 1;
+
+                foreach (var category in Model)
+                {
+                    <tr>
+                        <td>@stt</td>
+
+                        <td>
+                            <strong>@category.Name</strong>
+                        </td>
+
+                        <td>
+                            @category.Foods.Count món
+                        </td>
+
+                        <td>
+                            @(category.Description ?? "Chưa có mô tả")
+                        </td>
+
+                        <td class="text-end">
+
+    <!-- Nút sửa -->
+    <a asp-area="Admin"
+       asp-controller="Category"
+       asp-action="Edit"
+       asp-route-id="@category.CategoryId"
+       class="btn btn-sm btn-outline-dark me-1">
+        Sửa
+    </a>
+
+    <!-- Nút xóa -->
+    <form asp-area="Admin"
+          asp-controller="Category"
+          asp-action="Delete"
+          asp-route-id="@category.CategoryId"
+          method="post"
+          class="d-inline"
+          onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?');">
+
+        @Html.AntiForgeryToken()
+
+        <button type="submit"
+                class="btn btn-sm btn-outline-danger">
+            Xóa
+        </button>
+    </form>
+
+</td>
+                    </tr>
+
+                    stt++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        Chưa có danh mục nào trong Database.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

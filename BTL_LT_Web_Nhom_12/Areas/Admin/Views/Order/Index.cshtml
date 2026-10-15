@@ -1,0 +1,72 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Danh sách đơn hàng";
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Quản lý đơn hàng</h5>
+        <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" placeholder="Tìm tên khách, SĐT, Mã đơn..." style="width: 250px;" />
+            <select class="form-select form-select-sm" style="width: 160px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="0">Chờ xác nhận</option>
+                <option value="1">Đang chế biến</option>
+                <option value="2">Đang giao</option>
+                <option value="3">Đã giao</option>
+                <option value="4">Đã hủy</option>
+            </select>
+        </div>
+    </div>
+
+    <table class="table table-hover align-middle mt-2">
+        <thead class="table-light">
+            <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Số điện thoại</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>#1001</strong></td>
+                <td>Nguyễn Văn A</td>
+                <td>0912 345 678</td>
+                <td>12/10/2026 18:30</td>
+                <td class="fw-bold text-danger">385.000đ</td>
+                <td><span class="badge bg-warning text-dark">Chờ xác nhận</span></td>
+                <td class="text-end">
+                    <a href="/Order/Details/1001" class="btn btn-sm btn-outline-dark me-1">Chi tiết</a>
+                    <button class="btn btn-sm btn-success">Xác nhận</button>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>#1000</strong></td>
+                <td>Trần Thị B</td>
+                <td>0987 654 321</td>
+                <td>12/10/2026 18:15</td>
+                <td class="fw-bold text-danger">650.000đ</td>
+                <td><span class="badge bg-primary">Đang chế biến</span></td>
+                <td class="text-end">
+                    <a href="/Order/Details/1000" class="btn btn-sm btn-outline-dark me-1">Chi tiết</a>
+                    <button class="btn btn-sm btn-info text-white">Chuyển giao</button>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>#999</strong></td>
+                <td>Lê Văn C</td>
+                <td>0903 111 222</td>
+                <td>12/10/2026 17:45</td>
+                <td class="fw-bold text-danger">240.000đ</td>
+                <td><span class="badge bg-success">Đã giao</span></td>
+                <td class="text-end">
+                    <a href="/Order/Details/999" class="btn btn-sm btn-outline-dark">Chi tiết</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

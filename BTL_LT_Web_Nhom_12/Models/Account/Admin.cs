@@ -12,7 +12,7 @@ namespace BTL_LT_Web_Nhom_12.Models.Account
         public string Username { get; set; } = string.Empty;
 
         [Required]
-        public string PasswordHash { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100)]

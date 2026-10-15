@@ -1,0 +1,23 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Giờ hoạt động cửa hàng";
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4" style="max-width: 600px;">
+    <h5 class="fw-bold mb-3">Cấu hình thời gian nhận đơn</h5>
+    <form>
+        <div class="mb-3">
+            <label class="form-label">Giờ mở cửa sáng</label>
+            <input type="time" class="form-control" value="10:00" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Giờ đóng cửa tối</label>
+            <input type="time" class="form-control" value="22:00" />
+        </div>
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="storeStatus" checked />
+            <label class="form-check-label fw-bold" for="storeStatus">Bật nhận đơn tự động</label>
+        </div>
+        <button type="button" class="btn btn-danger">Lưu thay đổi</button>
+    </form>
+</div>

@@ -1,0 +1,42 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Tùy chọn món ăn";
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Danh sách nhóm tùy chọn (Topping / Sốt / Size)</h5>
+        <button class="btn btn-danger">+ Thêm tùy chọn</button>
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Tên nhóm tùy chọn</th>
+                <th>Các lựa chọn đi kèm</th>
+                <th>Áp dụng cho</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Vị Sốt Nướng</strong></td>
+                <td>BBQ Đậm Vị (+0đ), Sốt Cay Hàn Quốc (+10.000đ), Sốt Phô Mai (+15.000đ)</td>
+                <td>Món Sườn Nướng</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
+                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Kích thước (Size)</strong></td>
+                <td>Size S (250g), Size M (500g), Size L (1kg)</td>
+                <td>Tất cả món sườn</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
+                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

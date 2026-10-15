@@ -1,0 +1,69 @@
+﻿@model BTL_LT_Web_Nhom_12.Models.Menu.Category
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Sửa danh mục";
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+    <h5 class="fw-bold mb-4">Sửa danh mục món ăn</h5>
+
+    <form asp-area="Admin"
+          asp-controller="Category"
+          asp-action="Edit"
+          asp-route-id="@Model.CategoryId"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="CategoryId" />
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label">
+                Tên danh mục
+            </label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">
+                Mô tả
+            </label>
+            <textarea asp-for="Description"
+                      class="form-control"
+                      rows="3"></textarea>
+            <span asp-validation-for="Description"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ImageUrl" class="form-label">
+                Đường dẫn hình ảnh
+            </label>
+            <input asp-for="ImageUrl" class="form-control" />
+            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label asp-for="IsActive" class="form-check-label">
+                Đang hoạt động
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-danger">
+            Lưu thay đổi
+        </button>
+
+        <a asp-area="Admin"
+           asp-controller="Category"
+           asp-action="Index"
+           class="btn btn-secondary">
+            Quay lại
+        </a>
+    </form>
+</div>

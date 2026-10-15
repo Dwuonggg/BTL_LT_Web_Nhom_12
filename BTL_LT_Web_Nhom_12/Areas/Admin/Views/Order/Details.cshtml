@@ -1,0 +1,68 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+            <h5 class="fw-bold mb-3">Món ăn đã đặt (Mã đơn: #@ViewBag.OrderId)</h5>
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tên món</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th class="text-end">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>Sườn Tảng Nướng BBQ (Size L)</strong><br />
+                            <small class="text-muted">Ghi chú: Vị sốt ngọt nhẹ, cắt sẵn</small>
+                        </td>
+                        <td>320.000đ</td>
+                        <td>1</td>
+                        <td class="text-end fw-bold">320.000đ</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Khoai Tây Chiên Cắt Thắt</strong></td>
+                        <td>45.000đ</td>
+                        <td>1</td>
+                        <td class="text-end fw-bold">45.000đ</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Coca Cola 330ml</strong></td>
+                        <td>20.000đ</td>
+                        <td>1</td>
+                        <td class="text-end fw-bold">20.000đ</td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr />
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold fs-5">TỔNG CỘNG:</span>
+                <span class="fw-bold fs-4 text-danger">385.000đ</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-3 p-4">
+            <h5 class="fw-bold mb-3">Thông tin giao hàng</h5>
+            <p class="mb-1"><strong>Khách hàng:</strong> Nguyễn Văn A</p>
+            <p class="mb-1"><strong>Số điện thoại:</strong> 0912 345 678</p>
+            <p class="mb-1"><strong>Địa chỉ:</strong> Số 15 Ngõ 120 Hoàng Quốc Việt, Cầu Giấy, Hà Nội</p>
+            <p class="mb-1"><strong>Phương thức TT:</strong> Chuyển khoản ngân hàng (Đã thanh toán)</p>
+            <p class="mb-3"><strong>Trạng thái:</strong> <span class="badge bg-warning text-dark">Chờ xác nhận</span></p>
+
+            <hr />
+            <div class="d-grid gap-2">
+                <button class="btn btn-success">Xác nhận đơn hàng</button>
+                <button class="btn btn-danger">Hủy đơn hàng</button>
+                <a href="/Order" class="btn btn-outline-secondary">Quay lại danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>

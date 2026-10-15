@@ -1,0 +1,51 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Mã giảm giá";
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Quản lý Mã Giảm Giá / Voucher</h5>
+        <button class="btn btn-danger">+ Tạo mã giảm giá</button>
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Mã Voucher</th>
+                <th>Mức giảm</th>
+                <th>Áp dụng đơn từ</th>
+                <th>Số lượng</th>
+                <th>Hạn sử dụng</th>
+                <th>Trạng thái</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong class="text-primary">SUONMUOI50K</strong></td>
+                <td>Giảm 50.000đ</td>
+                <td>Đơn từ 300.000đ</td>
+                <td>45/100 lượt</td>
+                <td>31/10/2026</td>
+                <td><span class="badge bg-success">Còn hạn</span></td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
+                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                </td>
+            </tr>
+            <tr>
+                <td><strong class="text-primary">FREESHIP</strong></td>
+                <td>Miễn phí giao hàng</td>
+                <td>Đơn từ 200.000đ</td>
+                <td>100/100 lượt</td>
+                <td>15/10/2026</td>
+                <td><span class="badge bg-secondary">Hết lượt</span></td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
+                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

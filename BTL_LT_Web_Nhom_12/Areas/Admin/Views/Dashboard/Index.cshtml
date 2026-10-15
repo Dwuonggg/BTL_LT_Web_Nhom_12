@@ -1,0 +1,142 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Tổng quan";
+}
+
+<div class="dashboard-container">
+    <!-- Header & Filter -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Chào mừng trở lại, Admin!</h3>
+            <p class="text-muted mb-0">
+                Đây là tình hình hoạt động kinh doanh của Lửa Mộc.<br />
+                <small>Số liệu minh họa - Hôm nay, @DateTime.Now.ToString("dd/MM/yyyy")</small>
+            </p>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-dark active">Hôm nay</button>
+            <button type="button" class="btn btn-outline-secondary">7 ngày qua</button>
+            <button type="button" class="btn btn-outline-secondary">30 ngày qua</button>
+        </div>
+    </div>
+
+    <!-- Cards Row 1 -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Doanh thu</span>
+                </div>
+                <div class="stat-value text-danger">8.450.000đ</div>
+                <div class="stat-sub">Doanh thu ghi nhận hôm nay</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Tổng đơn hàng</span>
+                </div>
+                <div class="stat-value">42</div>
+                <div class="stat-sub">Đơn hàng trong ngày</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card highlight-border">
+                <div class="stat-header">
+                    <span class="stat-title">Chờ xác nhận</span>
+                </div>
+                <div class="stat-value">5</div>
+                <div class="stat-sub text-danger">Cần xác nhận đơn mới</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards Row 2 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Đang chế biến</span>
+                </div>
+                <div class="stat-value">8</div>
+                <div class="stat-sub">Bếp đang chuẩn bị món</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Đang giao</span>
+                </div>
+                <div class="stat-value">6</div>
+                <div class="stat-sub">Đang trên đường giao đến khách</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Đã giao</span>
+                </div>
+                <div class="stat-value">20</div>
+                <div class="stat-sub">Giao hàng thành công</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="chart-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold mb-0">Biểu đồ doanh thu</h5>
+                <small class="text-muted">Doanh thu theo khung giờ - Hôm nay</small>
+            </div>
+            <div class="text-end">
+                <h4 class="fw-bold text-danger mb-0">8.450.000đ</h4>
+                <small class="text-muted">Tổng doanh thu hôm nay</small>
+            </div>
+        </div>
+        <div style="height: 280px;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="text-muted small mt-2">
+            <span class="dot me-1"></span> Doanh thu · Dữ liệu mẫu minh họa
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['08-10', '10-12', '12-14', '14-16', '16-18', '18-20'],
+                datasets: [{
+                    label: 'Doanh thu (Triệu đ)',
+                    data: [0.35, 0.60, 1.20, 1.60, 2.80, 1.90],
+                    backgroundColor: '#bd4b32',
+                    borderRadius: 4,
+                    barThickness: 45
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return value.toFixed(1); }
+                        },
+                        grid: { borderDash: [2, 4] }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,89 @@
+﻿
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
+<aside class="admin-sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-text">
+            <h2>LỬA MỘC</h2>
+            <span>ADMIN PANEL</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+           class="menu-item @(currentController == "Dashboard" ? "active" : "")">
+            <span>Tổng quan</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+           class="menu-item @(currentController == "Order" ? "active" : "")">
+            <span>Đơn hàng</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Food" asp-action="Index"
+           class="menu-item @(currentController == "Food" ? "active" : "")">
+            <span>Món ăn</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Category" asp-action="Index"
+           class="menu-item @(currentController == "Category" ? "active" : "")">
+            <span>Danh mục</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="FoodOption" asp-action="Index"
+           class="menu-item @(currentController == "FoodOption" ? "active" : "")">
+            <span>Tùy chọn món</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Combo" asp-action="Index"
+           class="menu-item @(currentController == "Combo" ? "active" : "")">
+            <span>Combo</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Voucher" asp-action="Index"
+           class="menu-item @(currentController == "Voucher" ? "active" : "")">
+            <span>Voucher</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Customer" asp-action="Index"
+           class="menu-item @(currentController == "Customer" ? "active" : "")">
+            <span>Khách hàng</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Payment" asp-action="Index"
+           class="menu-item @(currentController == "Payment" ? "active" : "")">
+            <span>Thanh toán</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="Banner" asp-action="Index"
+           class="menu-item @(currentController == "Banner" ? "active" : "")">
+            <span>Banner</span>
+        </a>
+
+        <a asp-area="Admin" asp-controller="OpeningHour" asp-action="Index"
+           class="menu-item @(currentController == "OpeningHour" ? "active" : "")">
+            <span>Giờ hoạt động</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="tagline">
+            <strong>BẾP NƯỚNG ONLINE</strong>
+            <p>Đậm vị nướng - Nóng hổi tận nhà</p>
+        </div>
+
+        <form asp-area="" asp-controller="Account"
+              asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-logout">
+                Đăng xuất
+            </button>
+        </form>
+
+        <button id="toggleSidebar" class="btn-collapse">
+            Thu gọn
+        </button>
+    </div>
+</aside>

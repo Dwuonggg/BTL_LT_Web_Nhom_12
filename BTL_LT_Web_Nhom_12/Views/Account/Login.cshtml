@@ -1,0 +1,93 @@
+﻿@model BTL_LT_Web_Nhom_12.ViewModels.LoginViewModels
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-body p-4">
+
+                    <h3 class="text-center mb-4">
+                        Đăng nhập LỬA MỘC
+                    </h3>
+
+                    <form asp-controller="Account"
+                          asp-action="Login"
+                          method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="UsernameOrPhone"
+                                   class="form-label">
+                                Tài khoản hoặc số điện thoại
+                            </label>
+
+                            <input asp-for="UsernameOrPhone"
+                                   class="form-control"
+                                   placeholder="Nhập tài khoản hoặc SĐT" />
+
+                            <span asp-validation-for="UsernameOrPhone"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password"
+                                   class="form-label">
+                                Mật khẩu
+                            </label>
+
+                            <input asp-for="Password"
+                                   type="password"
+                                   class="form-control"
+                                   placeholder="Nhập mật khẩu" />
+
+                            <span asp-validation-for="Password"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="RememberMe"
+                                   class="form-check-input" />
+
+                            <label asp-for="RememberMe"
+                                   class="form-check-label">
+                                Ghi nhớ đăng nhập
+                            </label>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-danger w-100">
+                            Đăng nhập
+                        </button>
+                    </form>
+
+                    <p class="text-center mt-3">
+                        Chưa có tài khoản?
+                        <a asp-controller="Account"
+                           asp-action="Register">
+                            Đăng ký
+                        </a>
+                    </p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+<script>
+    function togglePassword() {
+        const password = document.getElementById("password");
+        const checkbox = document.getElementById("showPassword");
+
+        password.type = checkbox.checked ? "text" : "password";
+    }
+</script>
