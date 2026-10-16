@@ -31,7 +31,6 @@ namespace BTL_LT_Web_Nhom_12.Models.Menu
 
         [ForeignKey(nameof(CategoryId))]
         public Category Category { get; set; } = null!;
-        public ICollection<FoodOption> FoodOptions { get; set; } = new List<FoodOption>();
 
         public ICollection<ComboDetail> ComboDetails { get; set; } = new List<ComboDetail>();
     }

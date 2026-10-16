@@ -1,15 +1,67 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+﻿@model List<BTL_LT_Web_Nhom_12.Models.Menu.Food>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Danh sách món ăn";
+    var categories = ViewBag.Categories as List<BTL_LT_Web_Nhom_12.Models.Menu.Category>
+        ?? new List<BTL_LT_Web_Nhom_12.Models.Menu.Category>();
 }
 
 <div class="card border-0 shadow-sm rounded-3 p-4">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="fw-bold mb-0">Thực đơn món ăn</h5>
-        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addFoodModal">+ Thêm món mới</button>
-    </div>
 
+        <button class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#addFoodModal">
+            + Thêm món mới
+        </button>
+    </div>
+    <div class="row g-2 mb-3">
+        <div class="col-md-6">
+            <input type="text"
+                   id="searchFood"
+                   class="form-control"
+                   placeholder="Tìm kiếm tên món ăn..."
+                   autocomplete="off" />
+        </div>
+
+        <div class="col-md-3">
+            <select id="filterCategory" class="form-select">
+                <option value="">Tất cả danh mục</option>
+
+                @foreach (var category in categories)
+                {
+                    <option value="@category.CategoryId">
+                        @category.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <select id="filterStatus" class="form-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="Available">Đang bán</option>
+                <option value="Unavailable">Ngừng bán</option>
+            </select>
+        </div>
+    </div>
     <table class="table table-hover align-middle">
+
         <thead class="table-light">
             <tr>
                 <th>Hình ảnh</th>
@@ -20,84 +72,531 @@
                 <th class="text-end">Thao tác</th>
             </tr>
         </thead>
-        <tbody>
-            <tr>
-                <td><div style="width:50px; height:50px; background:#eee; border-radius:6px;" class="d-flex align-items-center justify-content-center text-muted small">Ảnh</div></td>
-                <td><strong>Sườn Tảng Nướng BBQ</strong></td>
-                <td>Sườn nướng</td>
-                <td class="fw-bold">320.000đ</td>
-                <td><span class="badge bg-success">Đang bán</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-            <tr>
-                <td><div style="width:50px; height:50px; background:#eee; border-radius:6px;" class="d-flex align-items-center justify-content-center text-muted small">Ảnh</div></td>
-                <td><strong>Sườn Cây Sốt Cay</strong></td>
-                <td>Sườn nướng</td>
-                <td class="fw-bold">280.000đ</td>
-                <td><span class="badge bg-success">Đang bán</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-            <tr>
-                <td><div style="width:50px; height:50px; background:#eee; border-radius:6px;" class="d-flex align-items-center justify-content-center text-muted small">Ảnh</div></td>
-                <td><strong>Salad Nga</strong></td>
-                <td>Món ăn kèm</td>
-                <td class="fw-bold">45.000đ</td>
-                <td><span class="badge bg-secondary">Hết hàng</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
+
+        <tbody id="foodTableBody">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var food in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(food.ImageUrl))
+                            {
+                                <img src="@food.ImageUrl"
+                                     alt="@food.Name"
+                                     style="width:50px;
+                                height:50px;
+                                object-fit:cover;
+                                border-radius:6px;" />
+                            }
+                            else
+                            {
+                                <div style="width:50px;
+                                    height:50px;
+                                    background:#eee;
+                                    border-radius:6px;"
+                                     class="d-flex align-items-center justify-content-center text-muted small">
+                                    Ảnh
+                                </div>
+                            }
+                        </td>
+
+                        <td>
+                            <strong>@food.Name</strong>
+                        </td>
+
+                        <td>
+                            @(food.Category?.Name ?? "Chưa có danh mục")
+                        </td>
+
+                        <td class="fw-bold">
+                            @food.Price.ToString("N0")đ
+                        </td>
+
+                        <td>
+                            @if (food.Category != null &&
+                                 food.Category.IsActive &&
+                                 food.Status == "Available")
+                            {
+                                <span class="badge bg-success">
+                                    Đang bán
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Hết hàng
+                                </span>
+                            }
+                        </td>
+
+                        <td class="text-end">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-dark me-1 btn-edit-food"
+                                    data-id="@food.FoodId"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editFoodModal">
+                                Sửa
+                            </button>
+
+                            <form asp-area="Admin"
+                                  asp-controller="Food"
+                                  asp-action="Delete"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Bạn có chắc muốn xóa món ăn này?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="id" value="@food.FoodId" />
+
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Xóa
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6"
+                        class="text-center text-muted py-4">
+                        Chưa có món ăn nào trong Database.
+                    </td>
+                </tr>
+            }
         </tbody>
+
     </table>
+    <div id="foodPagination">
+        @{
+            int currentPage = ViewBag.CurrentPage ?? 1;
+            int totalPages = ViewBag.TotalPages ?? 0;
+        }
+
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Phân trang món ăn">
+                <ul class="pagination justify-content-center mt-3">
+
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <button type="button"
+                                class="page-link"
+                                data-page="@(currentPage - 1)"
+                                disabled="@(currentPage == 1)">
+                            Trước
+                        </button>
+                    </li>
+
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <button type="button"
+                                    class="page-link"
+                                    data-page="@i">
+                                @i
+                            </button>
+                        </li>
+                    }
+
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <button type="button"
+                                class="page-link"
+                                data-page="@(currentPage + 1)"
+                                disabled="@(currentPage == totalPages)">
+                            Sau
+                        </button>
+                    </li>
+
+                </ul>
+            </nav>
+        }
+    </div>
 </div>
+
 
 <!-- Modal Thêm món -->
 <div class="modal fade" id="addFoodModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Thêm món ăn mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Tên món ăn</label>
-                        <input type="text" class="form-control" placeholder="Nhập tên món" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Danh mục</label>
-                        <select class="form-select">
-                            <option>Sườn nướng</option>
-                            <option>Món ăn kèm</option>
-                            <option>Đồ uống</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Giá bán (VNĐ)</label>
-                        <input type="number" class="form-control" placeholder="320000" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Hình ảnh</label>
-                        <input type="file" class="form-control" />
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Mô tả món ăn</label>
-                        <textarea class="form-control" rows="3" placeholder="Nhập mô tả món ăn..."></textarea>
+
+            <form asp-area="Admin"
+                  asp-controller="Food"
+                  asp-action="Create"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        Thêm món ăn mới
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tên món ăn</label>
+                            <input type="text"
+                                   name="name"
+                                   class="form-control"
+                                   maxlength="150"
+                                   required
+                                   placeholder="Nhập tên món" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Danh mục</label>
+
+                            <select name="categoryId"
+                                    class="form-select"
+                                    required>
+                                <option value="">-- Chọn danh mục --</option>
+
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category.CategoryId">
+                                        @category.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Giá bán (VNĐ)</label>
+                            <input type="number"
+                                   name="price"
+                                   class="form-control"
+                                   min="1"
+                                   step="1"
+                                   required
+                                   placeholder="320000" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Đường dẫn hình ảnh</label>
+                            <input type="file"
+                                   name="imageFile"
+                                   class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp" />
+                           </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Mô tả món ăn</label>
+                            <textarea name="description"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Nhập mô tả món ăn..."></textarea>
+                        </div>
+
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger">Lưu món mới</button>
-            </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Lưu món mới
+                    </button>
+                </div>
+
+            </form>
+
         </div>
     </div>
 </div>
+
+<!-- Modal Sửa món ăn -->
+<div class="modal fade" id="editFoodModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form id="editFoodForm"
+                  asp-area="Admin"
+                  asp-controller="Food"
+                  asp-action="Edit"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="id" id="editFoodId" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Sửa món ăn</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tên món ăn</label>
+                            <input type="text"
+                                   name="name"
+                                   id="editFoodName"
+                                   class="form-control"
+                                   maxlength="150"
+                                   required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Danh mục</label>
+                            <select name="categoryId"
+                                    id="editFoodCategory"
+                                    class="form-select"
+                                    required>
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category.CategoryId">
+                                        @category.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Giá bán (VNĐ)</label>
+                            <input type="text"
+                                   name="price"
+                                   id="editFoodPrice"
+                                   class="form-control"
+                                   inputmode="numeric"
+                                   pattern="[0-9]+"
+                                   required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái</label>
+                            <select name="status"
+                                    id="editFoodStatus"
+                                    class="form-select">
+                                <option value="Available">Đang bán</option>
+                                <option value="Unavailable">Ngừng bán</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="description"
+                                      id="editFoodDescription"
+                                      class="form-control"
+                                      rows="3"></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Hình ảnh hiện tại</label>
+                            <div>
+                                <img id="editFoodPreview"
+                                     alt="Ảnh món ăn"
+                                     style="width:100px;height:100px;
+                                object-fit:cover;
+                                border-radius:8px;
+                                display:none;" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Thay ảnh mới</label>
+                            <input type="file"
+                                   name="imageFile"
+                                   class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp" />
+                            <small class="text-muted">
+                                Để trống nếu muốn giữ ảnh cũ.
+                            </small>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input type="checkbox"
+                                       name="isFeatured"
+                                       value="true"
+                                       id="editFoodFeatured"
+                                       class="form-check-input" />
+                                <label for="editFoodFeatured"
+                                       class="form-check-label">
+                                    Món nổi bật
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit" class="btn btn-danger">
+                        Lưu thay đổi
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const searchInput = document.getElementById("searchFood");
+        const filterCategory = document.getElementById("filterCategory");
+        const filterStatus = document.getElementById("filterStatus");
+        const tableBody = document.getElementById("foodTableBody");
+
+        let timer;
+        let controller;
+        let requestId = 0;
+
+        // ===== TÌM KIẾM VÀ LỌC BẰNG AJAX =====
+        async function loadFoods(page = 1) {
+            if (controller) controller.abort();
+
+            controller = new AbortController();
+            const currentRequest = ++requestId;
+
+            const params = new URLSearchParams({
+                search: searchInput.value.trim(),
+                categoryId: filterCategory.value,
+                status: filterStatus.value,
+                page: page
+            });
+
+            try {
+                const response = await fetch(
+                    `/Admin/Food?${params.toString()}`,
+                    { signal: controller.signal }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Không thể tải danh sách món ăn.");
+                }
+
+                const html = await response.text();
+
+                if (currentRequest !== requestId) return;
+
+                const doc = new DOMParser().parseFromString(html, "text/html");
+                const newBody = doc.getElementById("foodTableBody");
+
+                if (newBody) {
+                    tableBody.innerHTML = newBody.innerHTML;
+                }
+                const newPagination = doc.getElementById("foodPagination");
+                const pagination = document.getElementById("foodPagination");
+
+                if (newPagination && pagination) {
+                    pagination.innerHTML = newPagination.innerHTML;
+                }
+
+            } catch (error) {
+                if (error.name !== "AbortError") {
+                    console.error(error);
+                }
+            }
+        }
+        document.getElementById("foodPagination")
+        .addEventListener("click", function (event) {
+
+            const button = event.target.closest("button[data-page]");
+
+            if (!button || button.disabled) return;
+
+            const page = Number(button.dataset.page);
+
+            if (page >= 1) {
+                loadFoods(page);
+            }
+        });
+        // Gõ chữ là tìm kiếm
+        searchInput.addEventListener("input", function () {
+            clearTimeout(timer);
+            if (controller) controller.abort();
+            ++requestId;
+            timer = setTimeout(loadFoods, 300);
+        });
+
+        // Thay đổi danh mục là lọc ngay
+        filterCategory.addEventListener("change", function () {
+            clearTimeout(timer);
+            loadFoods();
+        });
+
+        // Thay đổi trạng thái là lọc ngay
+        filterStatus.addEventListener("change", function () {
+            clearTimeout(timer);
+            loadFoods();
+        });
+
+        // ===== SỬA MÓN ĂN BẰNG MODAL =====
+        // Event Delegation giúp nút Sửa vẫn hoạt động sau khi AJAX lọc bảng
+        tableBody.addEventListener("click", async function (event) {
+
+            const button = event.target.closest(".btn-edit-food");
+            if (!button) return;
+
+            const id = button.dataset.id;
+
+            try {
+                const response = await fetch(`/Admin/Food/Edit/${id}`);
+
+                if (!response.ok) {
+                    throw new Error("Không tìm thấy món ăn");
+                }
+
+                const food = await response.json();
+
+                document.getElementById("editFoodId").value = food.foodId;
+                document.getElementById("editFoodName").value = food.name;
+                document.getElementById("editFoodCategory").value = food.categoryId;
+                document.getElementById("editFoodPrice").value = food.price;
+                document.getElementById("editFoodStatus").value = food.status;
+                document.getElementById("editFoodDescription").value =
+                    food.description ?? "";
+
+                document.getElementById("editFoodFeatured").checked =
+                    food.isFeatured;
+
+                const preview = document.getElementById("editFoodPreview");
+
+                if (food.imageUrl) {
+                    preview.src = food.imageUrl;
+                    preview.style.display = "block";
+                } else {
+                    preview.removeAttribute("src");
+                    preview.style.display = "none";
+                }
+
+            } catch (error) {
+                alert("Không thể tải thông tin món ăn.");
+                console.error(error);
+            }
+        });
+
+    });
+</script>
+
+
+

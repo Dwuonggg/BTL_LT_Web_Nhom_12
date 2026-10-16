@@ -41,7 +41,7 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -77,7 +77,7 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -225,39 +225,6 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.ToTable("Foods");
                 });
 
-            modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Menu.FoodOption", b =>
-                {
-                    b.Property<int>("FoodOptionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FoodOptionId"));
-
-                    b.Property<decimal>("AdditionalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("FoodId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("FoodOptionId");
-
-                    b.HasIndex("FoodId");
-
-                    b.ToTable("FoodOptions");
-                });
-
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Order.Order", b =>
                 {
                     b.Property<int>("OrderId")
@@ -357,35 +324,6 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                         {
                             t.HasCheckConstraint("CK_OrderDetail_FoodOrCombo", "([FoodId] IS NOT NULL AND [ComboId] IS NULL) OR ([FoodId] IS NULL AND [ComboId] IS NOT NULL)");
                         });
-                });
-
-            modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Order.OrderDetailOption", b =>
-                {
-                    b.Property<int>("OrderDetailOptionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderDetailOptionId"));
-
-                    b.Property<decimal>("AdditionalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("FoodOptionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderDetailId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrderDetailOptionId");
-
-                    b.HasIndex("FoodOptionId");
-
-                    b.HasIndex("OrderDetailId");
-
-                    b.ToTable("OrderDetailOptions");
                 });
 
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Payment.Payment", b =>
@@ -605,17 +543,6 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Menu.FoodOption", b =>
-                {
-                    b.HasOne("BTL_LT_Web_Nhom_12.Models.Menu.Food", "Food")
-                        .WithMany("FoodOptions")
-                        .HasForeignKey("FoodId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Food");
-                });
-
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Order.Order", b =>
                 {
                     b.HasOne("BTL_LT_Web_Nhom_12.Models.Account.Customer", "Customer")
@@ -650,25 +577,6 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.Navigation("Food");
 
                     b.Navigation("Order");
-                });
-
-            modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Order.OrderDetailOption", b =>
-                {
-                    b.HasOne("BTL_LT_Web_Nhom_12.Models.Menu.FoodOption", "FoodOption")
-                        .WithMany()
-                        .HasForeignKey("FoodOptionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("BTL_LT_Web_Nhom_12.Models.Order.OrderDetail", "OrderDetail")
-                        .WithMany("OrderDetailOptions")
-                        .HasForeignKey("OrderDetailId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("FoodOption");
-
-                    b.Navigation("OrderDetail");
                 });
 
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Payment.Payment", b =>
@@ -727,8 +635,6 @@ namespace BTL_LT_Web_Nhom_12.Migrations
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Menu.Food", b =>
                 {
                     b.Navigation("ComboDetails");
-
-                    b.Navigation("FoodOptions");
                 });
 
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Order.Order", b =>
@@ -736,11 +642,6 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.Navigation("OrderDetails");
 
                     b.Navigation("Payment");
-                });
-
-            modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Order.OrderDetail", b =>
-                {
-                    b.Navigation("OrderDetailOptions");
                 });
 
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Voucher.Voucher", b =>

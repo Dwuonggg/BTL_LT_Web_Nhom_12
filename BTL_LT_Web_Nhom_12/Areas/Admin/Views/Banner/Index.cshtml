@@ -1,35 +1,335 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Poster.Banner>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Banner Quảng Cáo";
 }
 
 <div class="card border-0 shadow-sm rounded-3 p-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="fw-bold mb-0">Quản lý Banner Trang Chủ</h5>
-        <button class="btn btn-danger">+ Thêm Banner</button>
+
+        <button type="button"
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#createBannerModal">
+            + Thêm Banner
+        </button>
     </div>
 
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Tiêu đề Banner</th>
-                <th>Hình ảnh</th>
-                <th>Liên kết chỉ hướng</th>
-                <th>Trạng thái</th>
-                <th class="text-end">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>Khuyến mãi Sườn Mười T10</strong></td>
-                <td><div style="width:120px; height:50px; background:#eee; border-radius:4px;" class="d-flex align-items-center justify-content-center text-muted small">Banner 1</div></td>
-                <td>/Promotion</td>
-                <td><span class="badge bg-success">Hiển thị</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div id="bannerMessage" class="alert d-none" role="alert"></div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Tiêu đề Banner</th>
+                    <th>Hình ảnh</th>
+                    <th>Liên kết</th>
+                    <th>Thứ tự</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Chưa có Banner nào.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var banner in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@banner.Title</strong>
+                            </td>
+
+                            <td>
+                                <img src="@banner.ImageUrl"
+                                     alt="@banner.Title"
+                                     style="width:120px;height:60px;object-fit:cover;border-radius:5px;" />
+                            </td>
+
+                            <td>
+                                <span class="small text-muted">
+                                    @(banner.TargetUrl ?? "Không có")
+                                </span>
+                            </td>
+
+                            <td>@banner.DisplayOrder</td>
+
+                            <td>
+                                <button type="button"
+                                        class="btn btn-sm banner-toggle @(banner.IsActive ? "btn-success" : "btn-secondary")"
+                                        data-id="@banner.BannerId"
+                                        data-url="@Url.Action("ToggleActive", "Banner", new { area = "Admin" })">
+                                    @(banner.IsActive ? "Hiển thị" : "Đang ẩn")
+                                </button>
+                            </td>
+
+                            <td class="text-end">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-dark me-1 edit-banner"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editBannerModal"
+                                        data-id="@banner.BannerId"
+                                        data-title="@banner.Title"
+                                        data-target="@banner.TargetUrl"
+                                        data-order="@banner.DisplayOrder"
+                                        data-active="@banner.IsActive.ToString().ToLowerInvariant()"
+                                        data-image="@banner.ImageUrl">
+                                    Sửa
+                                </button>
+
+                                <form asp-area="Admin"
+                                      asp-controller="Banner"
+                                      asp-action="Delete"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa Banner này?');">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden" name="id" value="@banner.BannerId" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- MODAL THÊM BANNER -->
+<div class="modal fade" id="createBannerModal" tabindex="-1"
+     aria-labelledby="createBannerTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-area="Admin"
+                  asp-controller="Banner"
+                  asp-action="Create"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createBannerTitle">Thêm Banner</h5>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề</label>
+                        <input type="text" name="title" class="form-control"
+                               maxlength="150" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ảnh Banner</label>
+                        <input type="file" name="imageFile" class="form-control"
+                               accept=".jpg,.jpeg,.png,.webp" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Liên kết khi nhấn Banner</label>
+                        <input type="text" name="targetUrl" class="form-control"
+                               maxlength="500"
+                               placeholder="/Menu hoặc https://example.com" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Thứ tự hiển thị</label>
+                        <input type="number" name="displayOrder"
+                               class="form-control" value="0" min="0" required />
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                               name="isActive" value="true" id="createActive" checked />
+                        <label class="form-check-label" for="createActive">
+                            Hiển thị Banner
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">
+                        Thêm Banner
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SỬA BANNER -->
+<div class="modal fade" id="editBannerModal" tabindex="-1"
+     aria-labelledby="editBannerTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-area="Admin"
+                  asp-controller="Banner"
+                  asp-action="Edit"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="editBannerId" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBannerTitle">Sửa Banner</h5>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề</label>
+                        <input type="text" name="title" id="editBannerName"
+                               class="form-control" maxlength="150" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ảnh hiện tại</label>
+                        <div>
+                            <img id="editBannerPreview" alt="Banner"
+                                 style="max-width:300px;max-height:140px;object-fit:contain;" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Đổi ảnh (không bắt buộc)</label>
+                        <input type="file" name="imageFile" id="editBannerFile"
+                               class="form-control"
+                               accept=".jpg,.jpeg,.png,.webp" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Liên kết</label>
+                        <input type="text" name="targetUrl" id="editBannerTarget"
+                               maxlength="500" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Thứ tự</label>
+                        <input type="number" name="displayOrder" id="editBannerOrder"
+                               class="form-control" min="0" required />
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" name="isActive" value="true"
+                               class="form-check-input" id="editBannerActive" />
+                        <label class="form-check-label" for="editBannerActive">
+                            Hiển thị Banner
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- TOKEN CHO AJAX -->
+<form id="bannerAjaxToken" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Đưa dữ liệu Banner vào modal Sửa
+    document.querySelectorAll(".edit-banner").forEach(button => {
+        button.addEventListener("click", function () {
+            document.getElementById("editBannerId").value = this.dataset.id;
+            document.getElementById("editBannerName").value = this.dataset.title;
+            document.getElementById("editBannerTarget").value = this.dataset.target || "";
+            document.getElementById("editBannerOrder").value = this.dataset.order;
+            document.getElementById("editBannerActive").checked =
+                this.dataset.active === "true";
+
+            document.getElementById("editBannerPreview").src = this.dataset.image;
+            document.getElementById("editBannerFile").value = "";
+        });
+    });
+
+    // Bật / tắt Banner bằng AJAX
+    document.querySelectorAll(".banner-toggle").forEach(button => {
+        button.addEventListener("click", async function () {
+
+            const oldText = this.textContent;
+            this.disabled = true;
+            this.textContent = "Đang lưu...";
+
+            try {
+                const token = document.querySelector(
+                    '#bannerAjaxToken input[name="__RequestVerificationToken"]'
+                ).value;
+
+                const body = new URLSearchParams();
+                body.append("id", this.dataset.id);
+                body.append("__RequestVerificationToken", token);
+
+                const response = await fetch(this.dataset.url, {
+                    method: "POST",
+                    body: body
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Cập nhật thất bại.");
+                }
+
+                this.textContent = result.isActive ? "Hiển thị" : "Đang ẩn";
+                this.classList.toggle("btn-success", result.isActive);
+                this.classList.toggle("btn-secondary", !result.isActive);
+
+                const message = document.getElementById("bannerMessage");
+                message.className = "alert alert-success";
+                message.textContent = result.message;
+
+            } catch (error) {
+                this.textContent = oldText;
+                const message = document.getElementById("bannerMessage");
+                message.className = "alert alert-danger";
+                message.textContent = error.message;
+            } finally {
+                this.disabled = false;
+            }
+        });
+    });
+});
+</script>

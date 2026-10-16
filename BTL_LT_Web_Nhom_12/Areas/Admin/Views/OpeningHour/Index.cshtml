@@ -1,23 +1,186 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Setting.OpeningHour>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Giờ hoạt động cửa hàng";
+
+    string[] days =
+    {
+        "Chủ nhật",
+        "Thứ hai",
+        "Thứ ba",
+        "Thứ tư",
+        "Thứ năm",
+        "Thứ sáu",
+        "Thứ bảy"
+    };
 }
 
-<div class="card border-0 shadow-sm rounded-3 p-4" style="max-width: 600px;">
-    <h5 class="fw-bold mb-3">Cấu hình thời gian nhận đơn</h5>
-    <form>
-        <div class="mb-3">
-            <label class="form-label">Giờ mở cửa sáng</label>
-            <input type="time" class="form-control" value="10:00" />
+<div class="card border-0 shadow-sm rounded-3 p-4">
+    <h5 class="fw-bold mb-2">Cấu hình thời gian nhận đơn</h5>
+    <p class="text-muted mb-4">
+        Thiết lập giờ mở cửa, đóng cửa và ngày nghỉ cho từng ngày trong tuần.
+    </p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
         </div>
-        <div class="mb-3">
-            <label class="form-label">Giờ đóng cửa tối</label>
-            <input type="time" class="form-control" value="22:00" />
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
         </div>
-        <div class="form-check form-switch mb-3">
-            <input class="form-check-input" type="checkbox" id="storeStatus" checked />
-            <label class="form-check-label fw-bold" for="storeStatus">Bật nhận đơn tự động</label>
-        </div>
-        <button type="button" class="btn btn-danger">Lưu thay đổi</button>
-    </form>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Ngày</th>
+                    <th>Giờ mở cửa</th>
+                    <th>Giờ đóng cửa</th>
+                    <th class="text-center">Nghỉ</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int day = 0; day < 7; day++)
+                {
+                    var hour = Model.FirstOrDefault(x => x.DayOfWeek == day);
+
+                    string openTime = hour?.OpenTime.ToString(@"hh\:mm")
+                        ?? "10:00";
+
+                    string closeTime = hour?.CloseTime.ToString(@"hh\:mm")
+                        ?? "22:00";
+
+                    bool isClosed = hour?.IsClosed ?? false;
+
+                    string formId = $"hourForm{day}";
+
+                    <tr>
+                        <td class="fw-semibold">
+                            @days[day]
+                        </td>
+
+                        <td>
+                            <input type="time"
+                                   name="openTime"
+                                   value="@openTime"
+                                   form="@formId"
+                                   class="form-control"
+                                   required />
+                        </td>
+
+                        <td>
+                            <input type="time"
+                                   name="closeTime"
+                                   value="@closeTime"
+                                   form="@formId"
+                                   class="form-control"
+                                   required />
+                        </td>
+
+                        <td class="text-center">
+                            <input type="checkbox"
+                                   name="isClosed"
+                                   value="true"
+                                   form="@formId"
+                                   class="form-check-input"
+                                   checked="@isClosed" />
+                        </td>
+
+                        <td class="text-center">
+                            <form id="@formId"
+                                  asp-area="Admin"
+                                  asp-controller="OpeningHour"
+                                  asp-action="Save"
+                                  method="post"
+                                  class="opening-hour-form">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="dayOfWeek"
+                                       value="@day" />
+
+                                <button type="submit"
+                                        class="btn btn-danger btn-sm">
+                                    <i class="bi bi-check-lg"></i>
+                                    Lưu
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".opening-hour-form")
+        .forEach(form => {
+
+            const button = form.querySelector('button[type="submit"]');
+
+            const inputs = Array.from(form.elements)
+                .filter(input =>
+                    input.matches('input[type="time"], input[name="isClosed"]')
+                );
+
+            inputs.forEach(input => {
+                input.addEventListener("input", resetButton);
+                input.addEventListener("change", resetButton);
+            });
+
+            function resetButton() {
+                button.disabled = false;
+                button.textContent = "Lưu thay đổi";
+                button.classList.remove("btn-success");
+                button.classList.add("btn-danger");
+            }
+
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                button.disabled = true;
+                button.textContent = "Đang lưu...";
+
+                try {
+                    const formData = new FormData(form);
+
+                    const response = await fetch(form.action, {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.message || "Không thể lưu dữ liệu."
+                        );
+                    }
+
+                    button.textContent = "Đã lưu ✓";
+                    button.classList.remove("btn-danger");
+                    button.classList.add("btn-success");
+
+                } catch (error) {
+                    alert(error.message);
+                    resetButton();
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
+});
+</script>

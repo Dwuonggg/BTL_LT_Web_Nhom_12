@@ -1,72 +1,340 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "Danh sách đơn hàng";
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Order.Order>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý đơn hàng";
+
+    string search = ViewBag.Search as string ?? "";
+    string status = ViewBag.Status as string ?? "";
 }
 
 <div class="card border-0 shadow-sm rounded-3 p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-0">Quản lý đơn hàng</h5>
-        <div class="d-flex gap-2">
-            <input type="text" class="form-control form-control-sm" placeholder="Tìm tên khách, SĐT, Mã đơn..." style="width: 250px;" />
-            <select class="form-select form-select-sm" style="width: 160px;">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+        <h5 class="fw-bold mb-0">
+            Quản lý đơn hàng
+        </h5>
+
+        <form asp-area="Admin"
+              asp-controller="Order"
+              asp-action="Index"
+              method="get"
+              class="d-flex flex-wrap gap-2">
+
+            <input type="text"
+                   name="search"
+                   value="@search"
+                   class="form-control form-control-sm"
+                   placeholder="Mã đơn, tên, SĐT..."
+                   style="width:220px" />
+
+            <select name="status"
+                    class="form-select form-select-sm"
+                    style="width:170px">
+
                 <option value="">Tất cả trạng thái</option>
-                <option value="0">Chờ xác nhận</option>
-                <option value="1">Đang chế biến</option>
-                <option value="2">Đang giao</option>
-                <option value="3">Đã giao</option>
-                <option value="4">Đã hủy</option>
+
+                <option value="Pending"
+                        selected="@(status == "Pending")">
+                    Chờ thanh toán
+                </option>
+
+                <option value="Preparing"
+                        selected="@(status == "Preparing")">
+                    Đang chuẩn bị
+                </option>
+
+                <option value="Delivering"
+                        selected="@(status == "Delivering")">
+                    Đang giao
+                </option>
+
+                <option value="Delivered"
+                        selected="@(status == "Delivered")">
+                    Đã giao
+                </option>
+
+                <option value="Cancelled"
+                        selected="@(status == "Cancelled")">
+                    Đã hủy
+                </option>
             </select>
-        </div>
+
+            <button type="submit"
+                    class="btn btn-sm btn-danger">
+                Tìm kiếm
+            </button>
+
+            <a asp-area="Admin"
+               asp-controller="Order"
+               asp-action="Index"
+               class="btn btn-sm btn-outline-secondary">
+                Đặt lại
+            </a>
+        </form>
     </div>
 
-    <table class="table table-hover align-middle mt-2">
-        <thead class="table-light">
-            <tr>
-                <th>Mã đơn</th>
-                <th>Khách hàng</th>
-                <th>Số điện thoại</th>
-                <th>Ngày đặt</th>
-                <th>Tổng tiền</th>
-                <th>Trạng thái</th>
-                <th class="text-end">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>#1001</strong></td>
-                <td>Nguyễn Văn A</td>
-                <td>0912 345 678</td>
-                <td>12/10/2026 18:30</td>
-                <td class="fw-bold text-danger">385.000đ</td>
-                <td><span class="badge bg-warning text-dark">Chờ xác nhận</span></td>
-                <td class="text-end">
-                    <a href="/Order/Details/1001" class="btn btn-sm btn-outline-dark me-1">Chi tiết</a>
-                    <button class="btn btn-sm btn-success">Xác nhận</button>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>#1000</strong></td>
-                <td>Trần Thị B</td>
-                <td>0987 654 321</td>
-                <td>12/10/2026 18:15</td>
-                <td class="fw-bold text-danger">650.000đ</td>
-                <td><span class="badge bg-primary">Đang chế biến</span></td>
-                <td class="text-end">
-                    <a href="/Order/Details/1000" class="btn btn-sm btn-outline-dark me-1">Chi tiết</a>
-                    <button class="btn btn-sm btn-info text-white">Chuyển giao</button>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>#999</strong></td>
-                <td>Lê Văn C</td>
-                <td>0903 111 222</td>
-                <td>12/10/2026 17:45</td>
-                <td class="fw-bold text-danger">240.000đ</td>
-                <td><span class="badge bg-success">Đã giao</span></td>
-                <td class="text-end">
-                    <a href="/Order/Details/999" class="btn btn-sm btn-outline-dark">Chi tiết</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="orderMessage"
+         class="alert d-none"
+         role="alert"></div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+
+            <thead class="table-light">
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Thanh toán</th>
+                    <th>Trạng thái đơn</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody id="orderTableBody">
+
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8"
+                            class="text-center text-muted py-4">
+                            Không có đơn hàng phù hợp.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var order in Model)
+                    {
+                        string statusText = order.Status switch
+                        {
+                            "Pending" => "Chờ thanh toán",
+                            "Preparing" => "Đang chuẩn bị",
+                            "Delivering" => "Đang giao",
+                            "Delivered" => "Đã giao",
+                            "Cancelled" => "Đã hủy",
+                            _ => order.Status
+                        };
+
+                        string statusClass = order.Status switch
+                        {
+                            "Pending" => "bg-warning text-dark",
+                            "Preparing" => "bg-primary",
+                            "Delivering" => "bg-info text-dark",
+                            "Delivered" => "bg-success",
+                            "Cancelled" => "bg-secondary",
+                            _ => "bg-secondary"
+                        };
+
+                        string paymentText =
+                            order.Payment?.PaymentStatus switch
+                            {
+                                "Pending" => "Chờ thanh toán",
+                                "Paid" => "Đã thanh toán",
+                                "Failed" => "Thất bại",
+                                "Cancelled" => "Đã hủy",
+                                "Refunded" => "Đã hoàn tiền",
+                                _ => "Chưa có giao dịch"
+                            };
+
+                        string paymentClass =
+                            order.Payment?.PaymentStatus switch
+                            {
+                                "Pending" => "bg-warning text-dark",
+                                "Paid" => "bg-success",
+                                "Failed" => "bg-danger",
+                                "Cancelled" => "bg-secondary",
+                                "Refunded" => "bg-info text-dark",
+                                _ => "bg-secondary"
+                            };
+
+                        bool isPaid =
+                            order.Payment?.PaymentStatus == "Paid";
+
+                        <tr data-order-id="@order.OrderId">
+
+                            <td>
+                                <strong>#@order.OrderId</strong>
+                            </td>
+
+                            <td>@order.ReceiverName</td>
+
+                            <td>@order.ReceiverPhone</td>
+
+                            <td>
+                                @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+
+                            <td class="fw-bold text-danger">
+                                @order.TotalAmount.ToString("N0")đ
+                            </td>
+
+                            <td>
+                                <span class="badge @paymentClass">
+                                    @paymentText
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge order-status @statusClass">
+                                    @statusText
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <div class="d-flex flex-wrap justify-content-end gap-1">
+
+                                    <a asp-area="Admin"
+                                       asp-controller="Order"
+                                       asp-action="Details"
+                                       asp-route-id="@order.OrderId"
+                                       class="btn btn-sm btn-outline-dark">
+                                        Chi tiết
+                                    </a>
+
+                                    @if (isPaid && order.Status == "Preparing")
+                                    {
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary order-update"
+                                                data-id="@order.OrderId"
+                                                data-next="Delivering">
+                                            Chuyển giao
+                                        </button>
+                                    }
+
+                                    @if (isPaid && order.Status == "Delivering")
+                                    {
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-success order-update"
+                                                data-id="@order.OrderId"
+                                                data-next="Delivered">
+                                            Xác nhận đã giao
+                                        </button>
+                                    }
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- TOKEN CHỐNG CSRF -->
+<form id="orderAjaxToken" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const tableBody = document.getElementById("orderTableBody");
+    const messageBox = document.getElementById("orderMessage");
+
+    const updateUrl =
+        '@Url.Action("UpdateStatus", "Order", new { area = "Admin" })';
+
+    const token = document.querySelector(
+        '#orderAjaxToken input[name="__RequestVerificationToken"]'
+    ).value;
+
+    function showMessage(text, success) {
+        messageBox.className = success
+            ? "alert alert-success"
+            : "alert alert-danger";
+
+        messageBox.textContent = text;
+    }
+
+    tableBody.addEventListener("click", async function (event) {
+
+        const button = event.target.closest(".order-update");
+
+        if (!button) return;
+
+        const id = button.dataset.id;
+        const newStatus = button.dataset.next;
+
+        let confirmText = "";
+
+        if (newStatus === "Delivering") {
+            confirmText = "Xác nhận đơn đang được giao cho khách?";
+        }
+        else if (newStatus === "Delivered") {
+            confirmText =
+                "Bạn đã kiểm tra và xác nhận khách thực sự nhận được hàng?";
+        }
+
+        if (!confirm(confirmText)) return;
+
+        const row = button.closest("tr");
+
+        button.disabled = true;
+
+        try {
+            const body = new URLSearchParams();
+
+            body.append("id", id);
+            body.append("newStatus", newStatus);
+            body.append("__RequestVerificationToken", token);
+
+            const response = await fetch(updateUrl, {
+                method: "POST",
+                body: body
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Cập nhật thất bại."
+                );
+            }
+
+            const badge = row.querySelector(".order-status");
+            const actions = button.parentElement;
+
+            if (result.status === "Delivering") {
+
+                badge.textContent = "Đang giao";
+                badge.className =
+                    "badge order-status bg-info text-dark";
+
+                button.textContent = "Xác nhận đã giao";
+                button.dataset.next = "Delivered";
+                button.className =
+                    "btn btn-sm btn-outline-success order-update";
+
+                button.disabled = false;
+            }
+            else if (result.status === "Delivered") {
+
+                badge.textContent = "Đã giao";
+                badge.className =
+                    "badge order-status bg-success";
+
+                button.remove();
+            }
+            else {
+  
+                window.location.reload();
+                return;
+            }
+
+            showMessage(result.message, true);
+
+        } catch (error) {
+
+            button.disabled = false;
+            showMessage(error.message, false);
+        }
+    });
+});
+</script>

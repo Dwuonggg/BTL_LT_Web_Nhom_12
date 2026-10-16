@@ -16,7 +16,7 @@ namespace BTL_LT_Web_Nhom_12.Models.Payment
         public decimal Amount { get; set; }
 
         [Required, StringLength(30)]
-        public string PaymentMethod { get; set; } = "COD";
+        public string PaymentMethod { get; set; } = "BankTransfer";
 
         [Required, StringLength(20)]
         public string PaymentStatus { get; set; } = "Pending";

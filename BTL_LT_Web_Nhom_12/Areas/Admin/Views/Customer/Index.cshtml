@@ -1,46 +1,473 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Account.Customer>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Quản lý khách hàng";
 }
 
 <div class="card border-0 shadow-sm rounded-3 p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-0">Danh sách tài khoản khách hàng</h5>
-        <input type="text" class="form-control form-control-sm" placeholder="Tìm tên, SĐT, Email..." style="width: 250px;" />
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <h5 class="fw-bold mb-0">
+            Danh sách tài khoản khách hàng
+        </h5>
+
+        <input type="text"
+               id="customerSearch"
+               class="form-control form-control-sm"
+               placeholder="Tìm tên hoặc số điện thoại..."
+               style="max-width:280px;" />
     </div>
 
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Họ và tên</th>
-                <th>Số điện thoại</th>
-                <th>Email</th>
-                <th>Tổng đơn đã đặt</th>
-                <th>Ngày đăng ký</th>
-                <th class="text-end">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>Nguyễn Văn A</strong></td>
-                <td>0912 345 678</td>
-                <td>nguyenvana@gmail.com</td>
-                <td>8 đơn</td>
-                <td>10/01/2026</td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark">Chi tiết</button>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>Trần Thị B</strong></td>
-                <td>0987 654 321</td>
-                <td>tranthib@gmail.com</td>
-                <td>3 đơn</td>
-                <td>15/03/2026</td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark">Chi tiết</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="customerMessage" class="alert d-none"></div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Họ và tên</th>
+                    <th>Số điện thoại</th>
+                    <th>Tổng đơn đã đặt</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody id="customerTableBody">
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Chưa có khách hàng nào.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var customer in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@customer.FullName</strong>
+                            </td>
+
+                            <td>@customer.Phone</td>
+
+                            <td>@customer.Orders.Count đơn</td>
+
+                            <td>
+                                @customer.CreatedAt.ToString("dd/MM/yyyy")
+                            </td>
+
+                            <td>
+                                <span class="badge @(customer.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(customer.IsActive ? "Hoạt động" : "Đã khóa")
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-dark me-1 customer-detail"
+                                        data-id="@customer.CustomerId">
+                                    Chi tiết
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-sm @(customer.IsActive ? "btn-outline-danger" : "btn-outline-success") customer-toggle"
+                                        data-id="@customer.CustomerId">
+                                    @(customer.IsActive ? "Khóa" : "Mở khóa")
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- MODAL CHI TIẾT KHÁCH HÀNG -->
+<div class="modal fade"
+     id="customerDetailModal"
+     tabindex="-1"
+     aria-labelledby="customerDetailTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="customerDetailTitle">
+                    Chi tiết khách hàng
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="customerDetailLoading" class="text-muted">
+                    Đang tải thông tin...
+                </div>
+
+                <div id="customerDetailContent" class="d-none">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <strong>Họ và tên:</strong>
+                            <div id="detailFullName"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Số điện thoại:</strong>
+                            <div id="detailPhone"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Ngày đăng ký:</strong>
+                            <div id="detailCreatedAt"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <strong>Trạng thái:</strong>
+                            <div id="detailStatus"></div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3">
+                        Lịch sử đơn hàng
+                    </h6>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Tổng tiền</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="customerOrderHistory"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="customerDetailError"
+                     class="alert alert-danger d-none"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Đóng
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<form id="customerAjaxToken" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("customerSearch");
+    const tableBody = document.getElementById("customerTableBody");
+    const message = document.getElementById("customerMessage");
+
+    const searchUrl = '@Url.Action("Search", "Customer", new { area = "Admin" })';
+    const detailUrl = '@Url.Action("Details", "Customer", new { area = "Admin" })';
+    const toggleUrl = '@Url.Action("ToggleActive", "Customer", new { area = "Admin" })';
+
+    const token = document.querySelector(
+        '#customerAjaxToken input[name="__RequestVerificationToken"]'
+    ).value;
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function formatDate(value) {
+        if (!value) return "";
+
+        const date = new Date(value);
+
+        return Number.isNaN(date.getTime())
+            ? ""
+            : date.toLocaleDateString("vi-VN");
+    }
+
+    function formatMoney(value) {
+        return Number(value ?? 0).toLocaleString("vi-VN") + "đ";
+    }
+
+    function showMessage(text, isSuccess = true) {
+        message.className = "alert " +
+            (isSuccess ? "alert-success" : "alert-danger");
+
+        message.textContent = text;
+    }
+
+    function renderCustomers(customers) {
+
+        if (!customers.length) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6"
+                        class="text-center text-muted py-4">
+                        Không tìm thấy khách hàng phù hợp.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = customers.map(customer => {
+
+            const active = customer.isActive;
+
+            return `
+                <tr>
+                    <td>
+                        <strong>${escapeHtml(customer.fullName)}</strong>
+                    </td>
+
+                    <td>${escapeHtml(customer.phone)}</td>
+
+                    <td>${customer.totalOrders} đơn</td>
+
+                    <td>${formatDate(customer.createdAt)}</td>
+
+                    <td>
+                        <span class="badge ${active ? "bg-success" : "bg-secondary"}">
+                            ${active ? "Hoạt động" : "Đã khóa"}
+                        </span>
+                    </td>
+
+                    <td class="text-end">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-dark me-1 customer-detail"
+                                data-id="${customer.customerId}">
+                            Chi tiết
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm ${active ? "btn-outline-danger" : "btn-outline-success"} customer-toggle"
+                                data-id="${customer.customerId}">
+                            ${active ? "Khóa" : "Mở khóa"}
+                        </button>
+                    </td>
+                </tr>`;
+        }).join("");
+    }
+
+    let searchTimer;
+    let searchController;
+
+    searchInput.addEventListener("input", function () {
+        clearTimeout(searchTimer);
+
+        searchTimer = setTimeout(async () => {
+
+            if (searchController) {
+                searchController.abort();
+            }
+
+            searchController = new AbortController();
+
+            try {
+                const url = searchUrl +
+                    "?q=" + encodeURIComponent(searchInput.value);
+
+                const response = await fetch(url, {
+                    signal: searchController.signal
+                });
+
+                if (!response.ok) {
+                    throw new Error("Không thể tìm kiếm khách hàng.");
+                }
+
+                const result = await response.json();
+
+                renderCustomers(result.customers);
+
+            } catch (error) {
+                if (error.name !== "AbortError") {
+                    showMessage(error.message, false);
+                }
+            }
+
+        }, 300);
+    });
+
+    tableBody.addEventListener("click", async function (event) {
+
+        const detailButton = event.target.closest(".customer-detail");
+        const toggleButton = event.target.closest(".customer-toggle");
+
+        if (detailButton) {
+            await showCustomerDetails(detailButton.dataset.id);
+        }
+
+        if (toggleButton) {
+            await toggleCustomer(toggleButton);
+        }
+    });
+// chi tiết khách hàng
+    async function showCustomerDetails(id) {
+
+        const modalElement =
+            document.getElementById("customerDetailModal");
+
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+        const loading =
+            document.getElementById("customerDetailLoading");
+
+        const content =
+            document.getElementById("customerDetailContent");
+
+        const errorBox =
+            document.getElementById("customerDetailError");
+
+        loading.classList.remove("d-none");
+        content.classList.add("d-none");
+        errorBox.classList.add("d-none");
+
+        modal.show();
+
+        try {
+            const response = await fetch(
+                detailUrl + "?id=" + encodeURIComponent(id)
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Không thể tải chi tiết khách hàng."
+                );
+            }
+
+            const customer = result.customer;
+
+            document.getElementById("detailFullName").textContent =
+                customer.fullName;
+
+            document.getElementById("detailPhone").textContent =
+                customer.phone;
+
+            document.getElementById("detailCreatedAt").textContent =
+                formatDate(customer.createdAt);
+
+            document.getElementById("detailStatus").textContent =
+                customer.isActive ? "Đang hoạt động" : "Đã khóa";
+
+            const history =
+                document.getElementById("customerOrderHistory");
+
+            if (!customer.orders.length) {
+                history.innerHTML = `
+                    <tr>
+                        <td colspan="4"
+                            class="text-center text-muted">
+                            Khách hàng chưa có đơn hàng.
+                        </td>
+                    </tr>`;
+            } else {
+                history.innerHTML = customer.orders.map(order => `
+                    <tr>
+                        <td>#${order.orderId}</td>
+                        <td>${formatDate(order.orderDate)}</td>
+                        <td>${escapeHtml(order.status)}</td>
+                        <td class="text-end">
+                            ${formatMoney(order.totalAmount)}
+                        </td>
+                    </tr>
+                `).join("");
+            }
+
+            loading.classList.add("d-none");
+            content.classList.remove("d-none");
+
+        } catch (error) {
+            loading.classList.add("d-none");
+            errorBox.textContent = error.message;
+            errorBox.classList.remove("d-none");
+        }
+    }
+
+    async function toggleCustomer(button) {
+
+        const isCurrentlyActive =
+            button.textContent.trim() === "Khóa";
+
+        const confirmText = isCurrentlyActive
+            ? "Bạn có chắc muốn khóa tài khoản khách hàng này?"
+            : "Bạn có chắc muốn mở khóa tài khoản này?";
+
+        if (!confirm(confirmText)) return;
+
+        button.disabled = true;
+
+        try {
+            const body = new URLSearchParams();
+
+            body.append("id", button.dataset.id);
+            body.append("__RequestVerificationToken", token);
+
+            const response = await fetch(toggleUrl, {
+                method: "POST",
+                body: body
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Không thể cập nhật tài khoản."
+                );
+            }
+
+            const row = button.closest("tr");
+            const badge = row.querySelector(".badge");
+
+            badge.textContent = result.isActive
+                ? "Hoạt động"
+                : "Đã khóa";
+
+            badge.className = "badge " +
+                (result.isActive ? "bg-success" : "bg-secondary");
+
+            button.textContent = result.isActive
+                ? "Khóa"
+                : "Mở khóa";
+
+            button.className = "btn btn-sm customer-toggle " +
+                (result.isActive
+                    ? "btn-outline-danger"
+                    : "btn-outline-success");
+
+            showMessage(result.message);
+
+        } catch (error) {
+            showMessage(error.message, false);
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+});
+</script>

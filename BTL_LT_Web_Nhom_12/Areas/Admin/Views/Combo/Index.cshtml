@@ -1,103 +1,198 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "Danh sách món ăn";
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Menu.Combo>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý Combo";
 }
 
 <div class="card border-0 shadow-sm rounded-3 p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-0">Thực đơn món ăn</h5>
-        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addFoodModal">+ Thêm món mới</button>
-    </div>
 
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Hình ảnh</th>
-                <th>Tên món</th>
-                <th>Danh mục</th>
-                <th>Giá bán</th>
-                <th>Trạng thái</th>
-                <th class="text-end">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><div style="width:50px; height:50px; background:#eee; border-radius:6px;" class="d-flex align-items-center justify-content-center text-muted small">Ảnh</div></td>
-                <td><strong>Sườn Tảng Nướng BBQ</strong></td>
-                <td>Sườn nướng</td>
-                <td class="fw-bold">320.000đ</td>
-                <td><span class="badge bg-success">Đang bán</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-            <tr>
-                <td><div style="width:50px; height:50px; background:#eee; border-radius:6px;" class="d-flex align-items-center justify-content-center text-muted small">Ảnh</div></td>
-                <td><strong>Sườn Cây Sốt Cay</strong></td>
-                <td>Sườn nướng</td>
-                <td class="fw-bold">280.000đ</td>
-                <td><span class="badge bg-success">Đang bán</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-            <tr>
-                <td><div style="width:50px; height:50px; background:#eee; border-radius:6px;" class="d-flex align-items-center justify-content-center text-muted small">Ảnh</div></td>
-                <td><strong>Salad Nga</strong></td>
-                <td>Món ăn kèm</td>
-                <td class="fw-bold">45.000đ</td>
-                <td><span class="badge bg-secondary">Hết hàng</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- Modal Thêm món -->
-<div class="modal fade" id="addFoodModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Thêm món ăn mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Tên món ăn</label>
-                        <input type="text" class="form-control" placeholder="Nhập tên món" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Danh mục</label>
-                        <select class="form-select">
-                            <option>Sườn nướng</option>
-                            <option>Món ăn kèm</option>
-                            <option>Đồ uống</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Giá bán (VNĐ)</label>
-                        <input type="number" class="form-control" placeholder="320000" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Hình ảnh</label>
-                        <input type="file" class="form-control" />
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Mô tả món ăn</label>
-                        <textarea class="form-control" rows="3" placeholder="Nhập mô tả món ăn..."></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger">Lưu món mới</button>
-            </div>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Tiêu đề và nút thêm -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Danh sách Combo</h5>
+
+        <a asp-area="Admin"
+           asp-controller="Combo"
+           asp-action="Create"
+           class="btn btn-danger">
+            + Thêm Combo mới
+        </a>
     </div>
+
+    <!-- Bảng danh sách Combo -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+
+            <thead class="table-light">
+                <tr>
+                    <th>Hình ảnh</th>
+                    <th>Tên Combo</th>
+                    <th>Món ăn trong Combo</th>
+                    <th>Giá bán</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var combo in Model)
+                    {
+                        <tr>
+                            <!-- Hình ảnh -->
+                            <td>
+                                @if (!string.IsNullOrEmpty(combo.ImageUrl))
+                                {
+                                    <img src="@combo.ImageUrl"
+                                         alt="@combo.Name"
+                                         style="width:60px;
+                                                height:60px;
+                                                object-fit:cover;
+                                                border-radius:8px;" />
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center
+                                                justify-content-center
+                                                bg-light text-muted small"
+                                         style="width:60px;
+                                                height:60px;
+                                                border-radius:8px;">
+                                        Ảnh
+                                    </div>
+                                }
+                            </td>
+
+                            <!-- Tên và mô tả -->
+                            <td>
+                                <strong>@combo.Name</strong>
+
+                                @if (!string.IsNullOrWhiteSpace(combo.Description))
+                                {
+                                    <div class="small text-muted mt-1">
+                                        @combo.Description
+                                    </div>
+                                }
+                            </td>
+
+                            <!-- Danh sách món -->
+                            <td>
+                                @if (combo.ComboDetails != null &&
+                                     combo.ComboDetails.Any())
+                                {
+                                    foreach (var detail in combo.ComboDetails)
+                                    {
+                                        <div class="mb-1">
+                                            <span class="text-muted">•</span>
+                                            @detail.Food.Name
+                                            <span class="text-muted">
+                                                × @detail.Quantity
+                                            </span>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        Chưa có món ăn
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- Giá bán -->
+                            <td class="fw-bold">
+                                @combo.Price.ToString("N0")đ
+                            </td>
+
+                            <!-- Trạng thái thực tế của Combo -->
+                            <td>
+                                @{
+                                    bool canSell = combo.IsActive
+                                        && combo.ComboDetails.Any()
+                                        && combo.ComboDetails.All(d =>
+                                            d.Food != null
+                                            && d.Food.Status == "Available"
+                                            && d.Food.Category != null
+                                            && d.Food.Category.IsActive);
+                                }
+
+                                @if (canSell)
+                                {
+                                    <span class="badge bg-success">
+                                        Đang bán
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        Ngừng bán
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- Thao tác -->
+                            <td class="text-end">
+                                <a asp-area="Admin"
+                                   asp-controller="Combo"
+                                   asp-action="Edit"
+                                   asp-route-id="@combo.ComboId"
+                                   class="btn btn-sm btn-outline-dark me-1">
+                                    Sửa
+                                </a>
+
+                                <form asp-area="Admin"
+                                      asp-controller="Combo"
+                                      asp-action="Delete"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa Combo này?');">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@combo.ComboId" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Xóa
+                                    </button>
+
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+                            Chưa có Combo nào trong Database.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
 </div>

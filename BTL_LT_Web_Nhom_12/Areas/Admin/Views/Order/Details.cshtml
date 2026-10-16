@@ -1,68 +1,466 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+﻿
+@model BTL_LT_Web_Nhom_12.Models.Order.Order
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Chi tiết đơn hàng";
+
+    string statusText = Model.Status switch
+    {
+        "Pending" => "Chờ thanh toán",
+        "Preparing" => "Đang chuẩn bị",
+        "Delivering" => "Đang giao",
+        "Delivered" => "Đã giao",
+        "Cancelled" => "Đã hủy",
+        _ => Model.Status
+    };
+
+    string statusClass = Model.Status switch
+    {
+        "Pending" => "bg-warning text-dark",
+        "Preparing" => "bg-primary",
+        "Delivering" => "bg-info text-dark",
+        "Delivered" => "bg-success",
+        "Cancelled" => "bg-secondary",
+        _ => "bg-secondary"
+    };
+
+    string paymentText = Model.Payment?.PaymentStatus switch
+    {
+        "Pending" => "Chờ thanh toán",
+        "Paid" => "Đã thanh toán",
+        "Failed" => "Thất bại",
+        "Cancelled" => "Đã hủy",
+        "Refunded" => "Đã hoàn tiền",
+        _ => "Chưa có thông tin"
+    };
+
+    bool isPaid = Model.Payment?.PaymentStatus == "Paid";
 }
 
-<div class="row g-4">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
-            <h5 class="fw-bold mb-3">Món ăn đã đặt (Mã đơn: #@ViewBag.OrderId)</h5>
-            <table class="table align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tên món</th>
-                        <th>Giá</th>
-                        <th>Số lượng</th>
-                        <th class="text-end">Thành tiền</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <strong>Sườn Tảng Nướng BBQ (Size L)</strong><br />
-                            <small class="text-muted">Ghi chú: Vị sốt ngọt nhẹ, cắt sẵn</small>
-                        </td>
-                        <td>320.000đ</td>
-                        <td>1</td>
-                        <td class="text-end fw-bold">320.000đ</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Khoai Tây Chiên Cắt Thắt</strong></td>
-                        <td>45.000đ</td>
-                        <td>1</td>
-                        <td class="text-end fw-bold">45.000đ</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Coca Cola 330ml</strong></td>
-                        <td>20.000đ</td>
-                        <td>1</td>
-                        <td class="text-end fw-bold">20.000đ</td>
-                    </tr>
-                </tbody>
-            </table>
-            <hr />
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold fs-5">TỔNG CỘNG:</span>
-                <span class="fw-bold fs-4 text-danger">385.000đ</span>
-            </div>
-        </div>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+    <div>
+        <h4 class="fw-bold mb-1">
+            Chi tiết đơn hàng #@Model.OrderId
+        </h4>
+
+        <span class="text-muted">
+            Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
+        </span>
     </div>
 
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-3 p-4">
-            <h5 class="fw-bold mb-3">Thông tin giao hàng</h5>
-            <p class="mb-1"><strong>Khách hàng:</strong> Nguyễn Văn A</p>
-            <p class="mb-1"><strong>Số điện thoại:</strong> 0912 345 678</p>
-            <p class="mb-1"><strong>Địa chỉ:</strong> Số 15 Ngõ 120 Hoàng Quốc Việt, Cầu Giấy, Hà Nội</p>
-            <p class="mb-1"><strong>Phương thức TT:</strong> Chuyển khoản ngân hàng (Đã thanh toán)</p>
-            <p class="mb-3"><strong>Trạng thái:</strong> <span class="badge bg-warning text-dark">Chờ xác nhận</span></p>
+    <a asp-area="Admin"
+       asp-controller="Order"
+       asp-action="Index"
+       class="btn btn-outline-secondary">
+        Quay lại danh sách
+    </a>
+</div>
+
+<div id="orderDetailMessage"
+     class="alert d-none"
+     role="alert"></div>
+
+<div class="row g-4">
+
+    <!-- CỘT TRÁI -->
+    <div class="col-lg-8">
+
+        <!-- DANH SÁCH MÓN -->
+        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+
+            <h5 class="fw-bold mb-3">
+                Danh sách món đã đặt
+            </h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên món / Combo</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-center">SL</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (!Model.OrderDetails.Any())
+                        {
+                            <tr>
+                                <td colspan="4"
+                                    class="text-center text-muted py-4">
+                                    Đơn hàng chưa có chi tiết.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var detail in Model.OrderDetails)
+                            {
+                                bool isCombo = detail.ComboId.HasValue;
+
+                                string productName = isCombo
+                                    ? detail.Combo?.Name ?? "Combo không xác định"
+                                    : detail.Food?.Name ?? "Món không xác định";
+
+                                decimal lineTotal =
+                                    detail.UnitPrice * detail.Quantity;
+
+                                <tr>
+                                    <td>
+                                        <strong>@productName</strong>
+
+                                        @if (isCombo)
+                                        {
+                                            <span class="badge bg-dark ms-1">
+                                                Combo
+                                            </span>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(detail.Note))
+                                        {
+                                            <div class="small text-muted mt-1">
+                                                Ghi chú: @detail.Note
+                                            </div>
+                                        }
+                                    </td>
+
+                                    <td class="text-end">
+                                        @detail.UnitPrice.ToString("N0")đ
+                                    </td>
+
+                                    <td class="text-center">
+                                        @detail.Quantity
+                                    </td>
+
+                                    <td class="text-end fw-bold">
+                                        @lineTotal.ToString("N0")đ
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
 
             <hr />
-            <div class="d-grid gap-2">
-                <button class="btn btn-success">Xác nhận đơn hàng</button>
-                <button class="btn btn-danger">Hủy đơn hàng</button>
-                <a href="/Order" class="btn btn-outline-secondary">Quay lại danh sách</a>
+
+            <div class="row justify-content-end">
+                <div class="col-md-7">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tiền hàng</span>
+                        <strong>
+                            @Model.Subtotal.ToString("N0")đ
+                        </strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Giảm giá</span>
+                        <strong class="text-success">
+                            -@Model.DiscountAmount.ToString("N0")đ
+                        </strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Phí giao hàng</span>
+                        <strong>
+                            @Model.DeliveryFee.ToString("N0")đ
+                        </strong>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-5">
+                            TỔNG CỘNG
+                        </span>
+
+                        <span class="fw-bold fs-4 text-danger">
+                            @Model.TotalAmount.ToString("N0")đ
+                        </span>
+                    </div>
+
+                </div>
             </div>
+        </div>
+
+        <!-- GHI CHÚ ĐƠN -->
+        <div class="card border-0 shadow-sm rounded-3 p-4">
+
+            <h5 class="fw-bold mb-3">
+                Ghi chú của khách hàng
+            </h5>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Note))
+            {
+                <p class="mb-0">@Model.Note</p>
+            }
+            else
+            {
+                <p class="text-muted mb-0">
+                    Không có ghi chú chung.
+                </p>
+            }
+        </div>
+
+    </div>
+
+    <!-- CỘT PHẢI -->
+    <div class="col-lg-4">
+
+        <!-- THÔNG TIN GIAO HÀNG -->
+        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+
+            <h5 class="fw-bold mb-3">
+                Thông tin giao hàng
+            </h5>
+
+            <p>
+                <strong>Khách hàng:</strong>
+                @(Model.Customer?.FullName ?? "Không xác định")
+            </p>
+
+            <p>
+                <strong>Người nhận:</strong>
+                @Model.ReceiverName
+            </p>
+
+            <p>
+                <strong>Số điện thoại:</strong>
+                @Model.ReceiverPhone
+            </p>
+
+            <p>
+                <strong>Địa chỉ:</strong>
+                @Model.DeliveryAddress
+            </p>
+
+            <hr />
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <strong>Trạng thái đơn</strong>
+
+                <span id="orderStatusBadge"
+                      class="badge @statusClass">
+                    @statusText
+                </span>
+            </div>
+
+            <div id="orderActions" class="d-grid gap-2">
+
+                @if (isPaid && Model.Status == "Preparing")
+                {
+                    <button type="button"
+                            class="btn btn-primary order-action"
+                            data-next="Delivering">
+                        Chuyển sang Đang giao
+                    </button>
+                }
+                else if (isPaid && Model.Status == "Delivering")
+                {
+                    <button type="button"
+                            class="btn btn-outline-success order-action"
+                            data-next="Delivered">
+                        Xác nhận đã giao (dự phòng)
+                    </button>
+                }
+                else if (Model.Status == "Pending")
+                {
+                    <div class="alert alert-warning mb-0">
+                        Đơn đang chờ thanh toán.
+                    </div>
+                }
+                else if (Model.Status == "Delivered")
+                {
+                    <div class="alert alert-success mb-0">
+                        Đơn đã giao thành công.
+                    </div>
+                }
+                else if (Model.Status == "Cancelled")
+                {
+                    <div class="alert alert-secondary mb-0">
+                        Đơn đã bị hủy.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary mb-0">
+                        Chưa có thao tác giao hàng khả dụng.
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        <!-- THÔNG TIN THANH TOÁN -->
+        <div class="card border-0 shadow-sm rounded-3 p-4">
+
+            <h5 class="fw-bold mb-3">
+                Thông tin thanh toán
+            </h5>
+
+            @if (Model.Payment != null)
+            {
+                <p>
+                    <strong>Phương thức:</strong>
+                    @Model.Payment.PaymentMethod
+                </p>
+
+                <p>
+                    <strong>Trạng thái:</strong>
+
+                    <span class="badge @(isPaid ? "bg-success" : "bg-warning text-dark")">
+                        @paymentText
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Số tiền:</strong>
+                    <span class="fw-bold text-danger">
+                        @Model.Payment.Amount.ToString("N0")đ
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Mã giao dịch:</strong>
+                    @(Model.Payment.TransactionCode ?? "Chưa có")
+                </p>
+
+                <p class="mb-0">
+                    <strong>Ngày thanh toán:</strong>
+
+                    @if (Model.Payment.PaidAt.HasValue)
+                    {
+                        @Model.Payment.PaidAt.Value.ToString("dd/MM/yyyy HH:mm")
+                    }
+                    else
+                    {
+                        <span>Chưa thanh toán</span>
+                    }
+                </p>
+            }
+            else
+            {
+                <p class="text-muted mb-0">
+                    Chưa có thông tin thanh toán.
+                </p>
+            }
+
         </div>
     </div>
 </div>
+
+<!-- TOKEN AJAX -->
+<form id="orderDetailAjaxToken" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const orderId = @Model.OrderId;
+
+    const updateUrl =
+        '@Url.Action("UpdateStatus", "Order", new { area = "Admin" })';
+
+    const token = document.querySelector(
+        '#orderDetailAjaxToken input[name="__RequestVerificationToken"]'
+    ).value;
+
+    const badge = document.getElementById("orderStatusBadge");
+    const actions = document.getElementById("orderActions");
+    const message = document.getElementById("orderDetailMessage");
+
+    function showMessage(text, success) {
+        message.className = success
+            ? "alert alert-success"
+            : "alert alert-danger";
+
+        message.textContent = text;
+    }
+
+    actions.addEventListener("click", async function (event) {
+
+        const button = event.target.closest(".order-action");
+
+        if (!button) return;
+
+        const newStatus = button.dataset.next;
+
+        let confirmText = "";
+
+        if (newStatus === "Delivering") {
+            confirmText = "Xác nhận đơn bắt đầu được giao?";
+        }
+        else if (newStatus === "Delivered") {
+            confirmText =
+                "Bạn đã kiểm tra khách thực sự nhận được hàng?";
+        }
+
+        if (!confirm(confirmText)) return;
+
+        button.disabled = true;
+
+        try {
+            const body = new URLSearchParams();
+
+            body.append("id", orderId);
+            body.append("newStatus", newStatus);
+            body.append("__RequestVerificationToken", token);
+
+            const response = await fetch(updateUrl, {
+                method: "POST",
+                body: body
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Không thể cập nhật đơn."
+                );
+            }
+
+            if (result.status === "Delivering") {
+
+                badge.textContent = "Đang giao";
+                badge.className =
+                    "badge bg-info text-dark";
+
+                button.textContent =
+                    "Xác nhận đã giao (dự phòng)";
+
+                button.dataset.next = "Delivered";
+                button.className =
+                    "btn btn-outline-success order-action";
+
+                button.disabled = false;
+            }
+            else if (result.status === "Delivered") {
+
+                badge.textContent = "Đã giao";
+                badge.className = "badge bg-success";
+
+                actions.innerHTML = `
+                    <div class="alert alert-success mb-0">
+                        Đơn đã giao thành công.
+                    </div>`;
+            }
+            else {
+                window.location.reload();
+                return;
+            }
+
+            showMessage(result.message, true);
+
+        } catch (error) {
+
+            button.disabled = false;
+            showMessage(error.message, false);
+        }
+    });
+});
+</script>

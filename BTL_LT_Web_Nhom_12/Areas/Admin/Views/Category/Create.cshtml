@@ -11,7 +11,8 @@
     <form asp-area="Admin"
           asp-controller="Category"
           asp-action="Create"
-          method="post">
+          method="post"
+         enctype="multipart/form-data">
 
         @Html.AntiForgeryToken()
 
@@ -39,11 +40,15 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="ImageUrl" class="form-label">
-                Đường dẫn hình ảnh
-            </label>
-            <input asp-for="ImageUrl" class="form-control" />
+            <label class="form-label">Hình ảnh danh mục</label>
+            <input type="file"
+                   name="imageFile"
+                   class="form-control"
+                   accept=".jpg,.jpeg,.png,.webp" />
         </div>
+        <span class="text-danger">
+            @Html.ValidationMessage("imageFile")
+        </span>
 
         <div class="form-check mb-3">
             <input asp-for="IsActive" class="form-check-input" />

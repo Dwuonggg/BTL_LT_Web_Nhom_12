@@ -1,0 +1,229 @@
+﻿@model BTL_LT_Web_Nhom_12.Models.Menu.Combo
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Sửa Combo";
+
+    var foods = ViewBag.Foods
+        as List<BTL_LT_Web_Nhom_12.Models.Menu.Food>
+        ?? new List<BTL_LT_Web_Nhom_12.Models.Menu.Food>();
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">Sửa Combo: @Model.Name</h5>
+
+        <a asp-area="Admin"
+           asp-controller="Combo"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Quay lại
+        </a>
+    </div>
+
+    <form asp-area="Admin"
+          asp-controller="Combo"
+          asp-action="Edit"
+          method="post"
+          enctype="multipart/form-data"
+          id="editComboForm">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="id" value="@Model.ComboId" />
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <label class="form-label">Tên Combo</label>
+                <input type="text"
+                       name="name"
+                       value="@Model.Name"
+                       class="form-control"
+                       maxlength="150"
+                       required />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Giá Combo (VNĐ)</label>
+                <input type="text"
+                       name="price"
+                       value="@Model.Price.ToString("0")"
+                       class="form-control"
+                       inputmode="numeric"
+                       pattern="[0-9]+"
+                       required />
+            </div>
+
+            @{
+                bool canSell = Model.IsActive
+                    && Model.ComboDetails.Any()
+                    && Model.ComboDetails.All(d =>
+                        d.Food.Status == "Available"
+                        && d.Food.Category.IsActive);
+            }
+
+            <div class="col-md-6">
+                <label class="form-label">Trạng thái Combo</label>
+
+                <select name="isActive" class="form-select">
+                    <option value="true" selected="@Model.IsActive">
+                        Bật kinh doanh
+                    </option>
+                    <option value="false" selected="@(!Model.IsActive)">
+                        Tắt kinh doanh
+                    </option>
+                </select>
+
+                <div class="mt-2">
+                    @if (canSell)
+                    {
+                        <span class="badge bg-success">Thực tế: Đang bán</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Thực tế: Ngừng bán</span>
+
+                        @if (Model.ComboDetails.Any(d =>
+                            d.Food.Status != "Available" ||
+                            !d.Food.Category.IsActive))
+                        {
+                            <div class="small text-danger mt-1">
+                                Combo có món ăn đã ngừng bán hoặc hết hàng.
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Thay ảnh Combo</label>
+                <input type="file"
+                       name="imageFile"
+                       class="form-control"
+                       accept=".jpg,.jpeg,.png,.webp" />
+                <small class="text-muted">
+                    Để trống nếu muốn giữ ảnh cũ.
+                </small>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Mô tả Combo</label>
+                <textarea name="description"
+                          class="form-control"
+                          rows="3">@Model.Description</textarea>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Ảnh hiện tại</label>
+
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div>
+                        <img src="@Model.ImageUrl"
+                             alt="@Model.Name"
+                             style="width:120px;height:120px;
+                                    object-fit:cover;
+                                    border-radius:8px;" />
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">
+                        Combo chưa có ảnh.
+                    </p>
+                }
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label fw-bold">
+                    Chọn món ăn trong Combo
+                </label>
+
+                <div class="border rounded-3 p-3"
+                     style="max-height:350px;overflow-y:auto;">
+
+                    @foreach (var food in foods)
+                    {
+                        var detail = Model.ComboDetails
+                            .FirstOrDefault(d => d.FoodId == food.FoodId);
+
+                        bool isSelected = detail != null;
+                        int quantity = detail?.Quantity ?? 1;
+
+                        <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+
+                            <input type="checkbox"
+                                   name="foodIds"
+                                   value="@food.FoodId"
+                                   class="form-check-input combo-food-checkbox"
+                                   id="food_@food.FoodId"
+                                   checked="@isSelected" />
+
+                            <label class="flex-grow-1"
+                                   for="food_@food.FoodId">
+                                <strong>@food.Name</strong>
+
+                                <div class="small text-muted">
+                                    @food.Price.ToString("N0")đ
+                                </div>
+                            </label>
+
+                            <div style="width:100px;">
+                                <input type="number"
+                                       name="quantities"
+                                       class="form-control combo-food-quantity"
+                                       value="@quantity"
+                                       min="1"
+                                       step="1"
+                                       disabled="@(!isSelected)" />
+                            </div>
+
+                        </div>
+                    }
+                </div>
+
+                <small class="text-muted">
+                    Có thể thêm, bỏ món hoặc thay đổi số lượng.
+                </small>
+            </div>
+
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a asp-area="Admin"
+               asp-controller="Combo"
+               asp-action="Index"
+               class="btn btn-secondary">
+                Hủy
+            </a>
+
+            <button type="submit" class="btn btn-danger">
+                Lưu thay đổi
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".combo-food-checkbox")
+        .forEach(checkbox => {
+
+            checkbox.addEventListener("change", function () {
+
+                const row = this.closest(".d-flex");
+                const quantity = row.querySelector(".combo-food-quantity");
+
+                quantity.disabled = !this.checked;
+
+                if (!this.checked) {
+                    quantity.value = 1;
+                }
+            });
+        });
+});
+</script>

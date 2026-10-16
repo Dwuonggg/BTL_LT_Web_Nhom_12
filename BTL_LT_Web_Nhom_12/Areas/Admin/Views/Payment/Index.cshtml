@@ -1,0 +1,386 @@
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Payment.Payment>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý thanh toán";
+
+    string search = ViewBag.Search as string ?? "";
+    string method = ViewBag.Method as string ?? "";
+    string status = ViewBag.Status as string ?? "";
+
+    var methods = ViewBag.Methods as List<string>
+        ?? new List<string>();
+
+    var statuses = ViewBag.Statuses as List<string>
+        ?? new List<string>();
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+
+    <!-- TIÊU ĐỀ VÀ BỘ LỌC -->
+    <div class="d-flex flex-wrap justify-content-between
+                align-items-center gap-3 mb-4">
+
+        <h5 class="fw-bold mb-0">
+            Quản lý thanh toán
+        </h5>
+
+        <form asp-area="Admin"
+              asp-controller="Payment"
+              asp-action="Index"
+              method="get"
+              class="d-flex flex-wrap gap-2">
+
+            <input type="text"
+                   name="search"
+                   value="@search"
+                   class="form-control form-control-sm"
+                   placeholder="Mã đơn, mã giao dịch..."
+                   style="width:220px;" />
+
+            <select name="method"
+                    class="form-select form-select-sm"
+                    style="width:160px;">
+
+                <option value="">
+                    Tất cả phương thức
+                </option>
+
+                @foreach (var item in methods)
+                {
+                    <option value="@item"
+                            selected="@(method == item)">
+                        @item
+                    </option>
+                }
+            </select>
+
+            <select name="status"
+                    class="form-select form-select-sm"
+                    style="width:160px;">
+
+                <option value="">
+                    Tất cả trạng thái
+                </option>
+
+                @foreach (var item in statuses)
+                {
+                    <option value="@item"
+                            selected="@(status == item)">
+                        @item
+                    </option>
+                }
+            </select>
+
+            <button type="submit"
+                    class="btn btn-sm btn-danger">
+                Tìm kiếm
+            </button>
+
+            <a asp-area="Admin"
+               asp-controller="Payment"
+               asp-action="Index"
+               class="btn btn-sm btn-outline-secondary">
+                Đặt lại
+            </a>
+
+        </form>
+    </div>
+
+    <!-- BẢNG THANH TOÁN -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+
+            <thead class="table-light">
+                <tr>
+                    <th>Mã GD</th>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Phương thức</th>
+                    <th>Số tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày thanh toán</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8"
+                            class="text-center text-muted py-4">
+                            Chưa có giao dịch thanh toán phù hợp.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var payment in Model)
+                    {
+                        string statusText =
+                            payment.PaymentStatus switch
+                            {
+                                "Pending" => "Chờ thanh toán",
+                                "Paid" => "Đã thanh toán",
+                                "Success" => "Thành công",
+                                "Failed" => "Thất bại",
+                                "Cancelled" => "Đã hủy",
+                                "Refunded" => "Đã hoàn tiền",
+                                _ => payment.PaymentStatus
+                            };
+
+                        string statusClass =
+                            payment.PaymentStatus switch
+                            {
+                                "Pending" => "bg-warning text-dark",
+                                "Paid" => "bg-success",
+                                "Success" => "bg-success",
+                                "Failed" => "bg-danger",
+                                "Cancelled" => "bg-secondary",
+                                "Refunded" => "bg-info text-dark",
+                                _ => "bg-secondary"
+                            };
+
+                        string methodText =
+                            payment.PaymentMethod switch
+                            {
+                                "COD" => "Tiền mặt (COD)",
+                                "BankTransfer" => "Chuyển khoản",
+                                "VietQR" => "VietQR",
+                                "VNPay" => "VNPay",
+                                "Momo" => "MoMo",
+                                _ => payment.PaymentMethod
+                            };
+
+                        <tr>
+                            <td>
+                                <strong>#@payment.PaymentId</strong>
+                            </td>
+
+                            <td>
+                                <a asp-area="Admin"
+                                   asp-controller="Order"
+                                   asp-action="Details"
+                                   asp-route-id="@payment.OrderId"
+                                   class="text-decoration-none fw-bold">
+                                    #@payment.OrderId
+                                </a>
+                            </td>
+
+                            <td>
+                                @(payment.Order?.ReceiverName
+                                    ?? "Không xác định")
+                            </td>
+
+                            <td>
+                                @methodText
+                            </td>
+
+                            <td class="fw-bold text-danger">
+                                @payment.Amount.ToString("N0")đ
+                            </td>
+
+                            <td>
+                                <span class="badge @statusClass">
+                                    @statusText
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (payment.PaidAt.HasValue)
+                                {
+                                    @payment.PaidAt.Value.ToString(
+                                        "dd/MM/yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        Chưa thanh toán
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-dark"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#paymentModal"
+
+                                        data-id="@payment.PaymentId"
+                                        data-order="@payment.OrderId"
+                                        data-customer="@(payment.Order?.ReceiverName ?? "")"
+                                        data-phone="@(payment.Order?.ReceiverPhone ?? "")"
+                                        data-amount="@payment.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                        data-method="@methodText"
+                                        data-status="@statusText"
+                                        data-code="@payment.TransactionCode"
+                                        data-paid="@(payment.PaidAt?.ToString("dd/MM/yyyy HH:mm") ?? "")">
+                                    Chi tiết
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+
+<!-- MODAL CHI TIẾT GIAO DỊCH -->
+<div class="modal fade"
+     id="paymentModal"
+     tabindex="-1"
+     aria-labelledby="paymentModalTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"
+                    id="paymentModalTitle">
+                    Chi tiết giao dịch
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Mã thanh toán
+                        </div>
+                        <strong id="detailPaymentId"></strong>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Mã đơn hàng
+                        </div>
+                        <strong id="detailOrderId"></strong>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Khách hàng
+                        </div>
+                        <strong id="detailCustomer"></strong>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Số điện thoại
+                        </div>
+                        <strong id="detailPhone"></strong>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Phương thức thanh toán
+                        </div>
+                        <strong id="detailMethod"></strong>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Trạng thái
+                        </div>
+                        <strong id="detailStatus"></strong>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Mã giao dịch ngân hàng / cổng TT
+                        </div>
+                        <strong id="detailCode"></strong>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Ngày thanh toán
+                        </div>
+                        <strong id="detailPaidAt"></strong>
+                    </div>
+
+                    <div class="col-12">
+                        <hr />
+
+                        <div class="text-muted">
+                            Số tiền thanh toán
+                        </div>
+
+                        <h3 class="fw-bold text-danger mt-2"
+                            id="detailAmount"></h3>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Đóng
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(
+        '[data-bs-target="#paymentModal"]'
+    ).forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            const data = this.dataset;
+
+            document.getElementById("detailPaymentId")
+                .textContent = "#" + data.id;
+
+            document.getElementById("detailOrderId")
+                .textContent = "#" + data.order;
+
+            document.getElementById("detailCustomer")
+                .textContent = data.customer || "Không xác định";
+
+            document.getElementById("detailPhone")
+                .textContent = data.phone || "Chưa có";
+
+            document.getElementById("detailMethod")
+                .textContent = data.method;
+
+            document.getElementById("detailStatus")
+                .textContent = data.status;
+
+            document.getElementById("detailCode")
+                .textContent = data.code || "Chưa có";
+
+            document.getElementById("detailPaidAt")
+                .textContent = data.paid || "Chưa thanh toán";
+
+            const money = Number(data.amount || 0);
+
+            document.getElementById("detailAmount")
+                .textContent =
+                    money.toLocaleString("vi-VN") + "đ";
+        });
+    });
+
+});
+</script>

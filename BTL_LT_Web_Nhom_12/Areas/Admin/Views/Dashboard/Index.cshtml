@@ -1,142 +1,354 @@
-﻿@{
+﻿
+@model BTL_LT_Web_Nhom_12.Areas.Admin.ViewModels.DashboardViewModel
+
+@{
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Tổng quan";
 }
 
 <div class="dashboard-container">
-    <!-- Header & Filter -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <!-- HEADER + BỘ LỌC -->
+    <div class="d-flex flex-wrap justify-content-between
+                align-items-center gap-3 mb-4">
+
         <div>
-            <h3 class="fw-bold mb-1">Chào mừng trở lại, Admin!</h3>
+            <h3 class="fw-bold mb-1">
+                Chào mừng trở lại, Admin!
+            </h3>
+
             <p class="text-muted mb-0">
-                Đây là tình hình hoạt động kinh doanh của Lửa Mộc.<br />
-                <small>Số liệu minh họa - Hôm nay, @DateTime.Now.ToString("dd/MM/yyyy")</small>
+                Đây là tình hình hoạt động kinh doanh của Lửa Mộc.
             </p>
+
+            <small class="text-muted">
+                Số liệu thực tế - @Model.PeriodLabel
+                (@DateTime.Now.ToString("dd/MM/yyyy"))
+            </small>
         </div>
+
         <div class="btn-group" role="group">
-            <button type="button" class="btn btn-dark active">Hôm nay</button>
-            <button type="button" class="btn btn-outline-secondary">7 ngày qua</button>
-            <button type="button" class="btn btn-outline-secondary">30 ngày qua</button>
+
+            <a asp-area="Admin"
+               asp-controller="Dashboard"
+               asp-action="Index"
+               asp-route-period="today"
+               class="btn @(Model.Period == "today" ? "btn-dark" : "btn-outline-secondary")">
+                Hôm nay
+            </a>
+
+            <a asp-area="Admin"
+               asp-controller="Dashboard"
+               asp-action="Index"
+               asp-route-period="7days"
+               class="btn @(Model.Period == "7days" ? "btn-dark" : "btn-outline-secondary")">
+                7 ngày qua
+            </a>
+
+            <a asp-area="Admin"
+               asp-controller="Dashboard"
+               asp-action="Index"
+               asp-route-period="30days"
+               class="btn @(Model.Period == "30days" ? "btn-dark" : "btn-outline-secondary")">
+                30 ngày qua
+            </a>
+
         </div>
     </div>
 
-    <!-- Cards Row 1 -->
+    <!-- THỐNG KÊ HÀNG 1 -->
     <div class="row g-3 mb-3">
-        <div class="col-md-4">
+
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Doanh thu</span>
+                    <span class="stat-title">
+                        Doanh thu
+                    </span>
                 </div>
-                <div class="stat-value text-danger">8.450.000đ</div>
-                <div class="stat-sub">Doanh thu ghi nhận hôm nay</div>
+
+                <div class="stat-value text-danger">
+                    @Model.Revenue.ToString("N0")đ
+                </div>
+
+                <div class="stat-sub">
+                    Thanh toán thành công trong kỳ
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
+
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Tổng đơn hàng</span>
+                    <span class="stat-title">
+                        Tổng đơn hàng
+                    </span>
                 </div>
-                <div class="stat-value">42</div>
-                <div class="stat-sub">Đơn hàng trong ngày</div>
+
+                <div class="stat-value">
+                    @Model.TotalOrders
+                </div>
+
+                <div class="stat-sub">
+                    Đơn được tạo trong kỳ
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">
+                        Khách đăng ký
+                    </span>
+                </div>
+
+                <div class="stat-value">
+                    @Model.NewCustomers
+                </div>
+
+                <div class="stat-sub">
+                    Tài khoản khách hàng mới
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card highlight-border">
                 <div class="stat-header">
-                    <span class="stat-title">Chờ xác nhận</span>
+                    <span class="stat-title">
+                        Chờ thanh toán
+                    </span>
                 </div>
-                <div class="stat-value">5</div>
-                <div class="stat-sub text-danger">Cần xác nhận đơn mới</div>
+
+                <div class="stat-value text-danger">
+                    @Model.PendingOrders
+                </div>
+
+                <div class="stat-sub">
+                    Đơn chưa thanh toán trong kỳ
+                </div>
             </div>
         </div>
+
     </div>
 
-    <!-- Cards Row 2 -->
+    <!-- THỐNG KÊ HÀNG 2 -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Đang chế biến</span>
+                    <span class="stat-title">
+                        Đang chuẩn bị
+                    </span>
                 </div>
-                <div class="stat-value">8</div>
-                <div class="stat-sub">Bếp đang chuẩn bị món</div>
+
+                <div class="stat-value">
+                    @Model.PreparingOrders
+                </div>
+
+                <div class="stat-sub">
+                    Đơn đã thanh toán, đang chuẩn bị
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
+
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Đang giao</span>
+                    <span class="stat-title">
+                        Đang giao
+                    </span>
                 </div>
-                <div class="stat-value">6</div>
-                <div class="stat-sub">Đang trên đường giao đến khách</div>
+
+                <div class="stat-value">
+                    @Model.DeliveringOrders
+                </div>
+
+                <div class="stat-sub">
+                    Đang vận chuyển đến khách
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
+
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Đã giao</span>
+                    <span class="stat-title">
+                        Đã giao
+                    </span>
                 </div>
-                <div class="stat-value">20</div>
-                <div class="stat-sub">Giao hàng thành công</div>
+
+                <div class="stat-value">
+                    @Model.DeliveredOrders
+                </div>
+
+                <div class="stat-sub">
+                    Đơn đã giao thành công
+                </div>
             </div>
         </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">
+                        Đã hủy
+                    </span>
+                </div>
+
+                <div class="stat-value">
+                    @Model.CancelledOrders
+                </div>
+
+                <div class="stat-sub">
+                    Đơn hàng bị hủy trong kỳ
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Chart Section -->
+    <!-- BIỂU ĐỒ DOANH THU -->
     <div class="chart-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div class="d-flex flex-wrap justify-content-between
+                    align-items-center gap-3 mb-3">
+
             <div>
-                <h5 class="fw-bold mb-0">Biểu đồ doanh thu</h5>
-                <small class="text-muted">Doanh thu theo khung giờ - Hôm nay</small>
+                <h5 class="fw-bold mb-1">
+                    Biểu đồ doanh thu
+                </h5>
+
+                <small class="text-muted">
+                    @if (Model.Period == "today")
+                    {
+                        <span>Doanh thu theo giờ - Hôm nay</span>
+                    }
+                    else
+                    {
+                        <span>
+                            Doanh thu theo ngày - @Model.PeriodLabel
+                        </span>
+                    }
+                </small>
             </div>
+
             <div class="text-end">
-                <h4 class="fw-bold text-danger mb-0">8.450.000đ</h4>
-                <small class="text-muted">Tổng doanh thu hôm nay</small>
+                <h4 class="fw-bold text-danger mb-0">
+                    @Model.Revenue.ToString("N0")đ
+                </h4>
+
+                <small class="text-muted">
+                    Tổng doanh thu @Model.PeriodLabel.ToLower()
+                </small>
             </div>
+
         </div>
-        <div style="height: 280px;">
+
+        <div style="height:320px; position:relative;">
             <canvas id="revenueChart"></canvas>
         </div>
-        <div class="text-muted small mt-2">
-            <span class="dot me-1"></span> Doanh thu · Dữ liệu mẫu minh họa
+
+        <div class="text-muted small mt-3">
+            Doanh thu dựa trên các giao dịch đã xác nhận thanh toán,
+            không bao gồm giao dịch đang chờ hoặc đã hoàn tiền.
         </div>
+
     </div>
 </div>
 
 @section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+
     <script>
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['08-10', '10-12', '12-14', '14-16', '16-18', '18-20'],
-                datasets: [{
-                    label: 'Doanh thu (Triệu đ)',
-                    data: [0.35, 0.60, 1.20, 1.60, 2.80, 1.90],
-                    backgroundColor: '#bd4b32',
-                    borderRadius: 4,
-                    barThickness: 45
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const canvas = document.getElementById("revenueChart");
+
+            if (!canvas || typeof Chart === "undefined") {
+                console.error("Không thể tải Chart.js.");
+                return;
+            }
+
+            const labels =
+                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartLabels));
+
+            const values =
+                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartValues));
+
+            const ctx = canvas.getContext("2d");
+
+            new Chart(ctx, {
+                type: "bar",
+
+                data: {
+                    labels: labels,
+
+                    datasets: [{
+                        label: "Doanh thu (VNĐ)",
+                        data: values,
+
+                        backgroundColor: "#bd4b32",
+                        hoverBackgroundColor: "#a83f2a",
+
+                        borderRadius: 4,
+                        maxBarThickness: 42
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) { return value.toFixed(1); }
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    plugins: {
+                        legend: {
+                            display: false
                         },
-                        grid: { borderDash: [2, 4] }
+
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y || 0;
+
+                                    return "Doanh thu: " +
+                                        value.toLocaleString("vi-VN") +
+                                        "đ";
+                                }
+                            }
+                        }
                     },
-                    x: {
-                        grid: { display: false }
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+
+                            ticks: {
+                                callback: function(value) {
+                                    return Number(value)
+                                        .toLocaleString("vi-VN");
+                                }
+                            }
+                        },
+
+                        x: {
+                            grid: {
+                                display: false
+                            },
+
+                            ticks: {
+                                maxRotation: 60,
+                                minRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 15
+                            }
+                        }
                     }
                 }
-            }
+            });
+
         });
     </script>
 }

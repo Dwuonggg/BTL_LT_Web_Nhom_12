@@ -17,6 +17,7 @@
             + Thêm danh mục
         </a>
     </div>
+
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success">
@@ -31,81 +32,100 @@
         </div>
     }
 
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>STT</th>
-                <th>Tên danh mục</th>
-                <th>Số lượng món</th>
-                <th>Mô tả</th>
-                <th class="text-end">Thao tác</th>
-            </tr>
-        </thead>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>STT</th>
+                    <th>Hình ảnh</th>
+                    <th>Tên danh mục</th>
+                    <th>Số lượng món</th>
+                    <th>Mô tả</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
 
-        <tbody>
-            @if (Model != null && Model.Any())
-            {
-                int stt = 1;
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    int stt = 1;
 
-                foreach (var category in Model)
+                    foreach (var category in Model)
+                    {
+                        <tr>
+                            <td>@stt</td>
+
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(category.ImageUrl))
+                                {
+                                    <img src="@category.ImageUrl"
+                                         alt="@category.Name"
+                                         style="width:65px;height:65px;
+                                    object-fit:cover;
+                                    border-radius:8px;" />
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">
+                                        Chưa có ảnh
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <strong>@category.Name</strong>
+                            </td>
+
+                            <td>
+                                @category.Foods.Count món
+                            </td>
+
+                            <td>
+                                @(category.Description ?? "Chưa có mô tả")
+                            </td>
+
+                            <td class="text-end">
+                                <!-- Nút Sửa -->
+                                <a asp-area="Admin"
+                                   asp-controller="Category"
+                                   asp-action="Edit"
+                                   asp-route-id="@category.CategoryId"
+                                   class="btn btn-sm btn-outline-dark me-1">
+                                    Sửa
+                                </a>
+
+                                <!-- Nút Xóa -->
+                                <form asp-area="Admin"
+                                      asp-controller="Category"
+                                      asp-action="Delete"
+                                      asp-route-id="@category.CategoryId"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?');">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        stt++;
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>@stt</td>
-
-                        <td>
-                            <strong>@category.Name</strong>
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+                            Chưa có danh mục nào trong Database.
                         </td>
-
-                        <td>
-                            @category.Foods.Count món
-                        </td>
-
-                        <td>
-                            @(category.Description ?? "Chưa có mô tả")
-                        </td>
-
-                        <td class="text-end">
-
-    <!-- Nút sửa -->
-    <a asp-area="Admin"
-       asp-controller="Category"
-       asp-action="Edit"
-       asp-route-id="@category.CategoryId"
-       class="btn btn-sm btn-outline-dark me-1">
-        Sửa
-    </a>
-
-    <!-- Nút xóa -->
-    <form asp-area="Admin"
-          asp-controller="Category"
-          asp-action="Delete"
-          asp-route-id="@category.CategoryId"
-          method="post"
-          class="d-inline"
-          onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?');">
-
-        @Html.AntiForgeryToken()
-
-        <button type="submit"
-                class="btn btn-sm btn-outline-danger">
-            Xóa
-        </button>
-    </form>
-
-</td>
                     </tr>
-
-                    stt++;
                 }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">
-                        Chưa có danh mục nào trong Database.
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>

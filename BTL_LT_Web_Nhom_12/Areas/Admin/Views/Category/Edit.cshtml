@@ -12,7 +12,8 @@
           asp-controller="Category"
           asp-action="Edit"
           asp-route-id="@Model.CategoryId"
-          method="post">
+          method="post"
+          enctype="multipart/form-data">
 
         @Html.AntiForgeryToken()
 
@@ -41,11 +42,32 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="ImageUrl" class="form-label">
-                Đường dẫn hình ảnh
-            </label>
-            <input asp-for="ImageUrl" class="form-control" />
-            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            <label class="form-label">Hình ảnh danh mục</label>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                <div class="mb-2">
+                    <img src="@Model.ImageUrl"
+                         alt="@Model.Name"
+                         style="width:100px;
+                    height:100px;
+                    object-fit:cover;
+                    border-radius:8px;" />
+                </div>
+            }
+
+            <input type="file"
+                   name="imageFile"
+                   class="form-control"
+                   accept=".jpg,.jpeg,.png,.webp" />
+
+            <small class="text-muted">
+                Không chọn ảnh mới nếu muốn giữ ảnh hiện tại.
+            </small>
+
+            <div class="text-danger">
+                @Html.ValidationMessage("imageFile")
+            </div>
         </div>
 
         <div class="form-check mb-3">

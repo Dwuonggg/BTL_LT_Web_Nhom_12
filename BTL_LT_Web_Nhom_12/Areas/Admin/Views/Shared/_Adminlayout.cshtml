@@ -1,46 +1,613 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin Panel Sườn Mười</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Admin Panel LỬA MỘC</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/admin.css"
+          asp-append-version="true" />
+
+    <style>
+        .admin-notification-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: inherit;
+        }
+
+        .admin-notification-button:hover {
+            color: #bd4b32;
+        }
+
+        .admin-notification-count {
+            background-color: #bd4b32;
+            color: white;
+            border-radius: 20px;
+            min-width: 20px;
+            font-size: 11px;
+            padding: 3px 6px;
+            text-align: center;
+        }
+
+        .admin-notification-menu {
+            width: min(420px, calc(100vw - 24px));
+            max-height: 500px;
+            overflow: hidden;
+            border: 0;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .15);
+        }
+
+        .admin-notification-list {
+            max-height: 390px;
+            overflow-y: auto;
+        }
+
+        .admin-notification-item {
+            display: block;
+            padding: 14px 16px;
+            border-bottom: 1px solid #eeeeee;
+            color: #212529;
+            text-decoration: none;
+            white-space: normal;
+        }
+
+        .admin-notification-item:hover {
+            background: #f8f5f3;
+            color: #212529;
+        }
+
+        .admin-notification-item.unread {
+            background: #fff7f4;
+            border-left: 3px solid #bd4b32;
+        }
+
+        .admin-notification-item .item-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .admin-notification-item .item-meta {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .admin-notification-item .item-list {
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        .admin-notification-item .item-note {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .admin-toast-container {
+            position: fixed;
+            top: 88px;
+            right: 20px;
+            z-index: 2000;
+            max-width: calc(100vw - 40px);
+        }
+
+        .admin-order-toast {
+            border-left: 4px solid #198754;
+            width: min(370px, calc(100vw - 40px));
+        }
+    </style>
 </head>
+
 <body>
+
     <div class="admin-wrapper">
-        <!-- Sidebar Menu -->
+
+        <!-- SIDEBAR -->
         @await Html.PartialAsync("_AdminSidebar")
 
-        <!-- Main Content Area -->
+        <!-- MAIN CONTENT -->
         <div class="admin-main">
-            <!-- Top Header -->
+
+            <!-- HEADER -->
             <header class="admin-header">
+
                 <div class="header-breadcrumb">
-                    <span>Quản trị</span> / <strong class="text-dark">@ViewData["Title"]</strong>
-                    <h4 class="m-0 mt-1 fw-bold">@ViewData["Title"]</h4>
+                    <span>Quản trị</span> /
+                    <strong class="text-dark">
+                        @ViewData["Title"]
+                    </strong>
+
+                    <h4 class="m-0 mt-1 fw-bold">
+                        @ViewData["Title"]
+                    </h4>
                 </div>
+
                 <div class="header-user">
-                    <div class="notification-icon">
-                        <span>Thông báo</span>
-                        <span class="badge">5</span>
+
+                    <!-- THÔNG BÁO -->
+                    <div class="dropdown notification-icon">
+
+                        <button type="button"
+                                id="notificationDropdownButton"
+                                class="btn border-0 bg-transparent p-0 admin-notification-button"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
+                                aria-expanded="false">
+
+                            <span>Thông báo</span>
+
+                            <span id="notificationCount"
+                                  class="admin-notification-count d-none">
+                                0
+                            </span>
+                        </button>
+
+                        <div class="dropdown-menu dropdown-menu-end admin-notification-menu">
+
+                            <div class="d-flex justify-content-between align-items-center px-3 py-3 border-bottom">
+                                <strong>Thông báo đơn hàng</strong>
+
+                                <span class="text-muted small">
+                                    Đã thanh toán
+                                </span>
+                            </div>
+
+                            <div id="notificationList"
+                                 class="admin-notification-list">
+
+                                <div class="text-center text-muted p-4">
+                                    Đang tải thông báo...
+                                </div>
+
+                            </div>
+
+                            <div class="text-center border-top p-2">
+                                <a asp-area="Admin"
+                                   asp-controller="Order"
+                                   asp-action="Index"
+                                   class="text-decoration-none small fw-semibold">
+                                    Xem tất cả đơn hàng
+                                </a>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- ADMIN PROFILE -->
                     <div class="user-profile">
                         <div class="avatar">A</div>
                         <span class="fw-semibold">Admin</span>
                     </div>
+
                 </div>
             </header>
 
-            <!-- Page Content -->
+            <!-- PAGE CONTENT -->
             <main class="admin-content">
                 @RenderBody()
             </main>
+
         </div>
     </div>
 
+    <!-- TOAST THÔNG BÁO ĐƠN MỚI -->
+    <div id="adminToastContainer"
+         class="admin-toast-container"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const notificationUrl =
+                '@Url.Action("Latest", "Notification", new { area = "Admin" })';
+
+            const orderDetailsUrl =
+                '@Url.Action("Details", "Order", new { area = "Admin" })';
+
+            const countElement =
+                document.getElementById("notificationCount");
+
+            const notificationList =
+                document.getElementById("notificationList");
+
+            const dropdownButton =
+                document.getElementById("notificationDropdownButton");
+
+            const toastContainer =
+                document.getElementById("adminToastContainer");
+
+            // Lưu danh sách đã xem trong trình duyệt.
+            // Đây chưa phải trạng thái đã đọc trên server.
+            const seenStorageKey = "luaMocAdminSeenPayments_v1";
+            const knownStorageKey = "luaMocAdminKnownPayments_v1";
+
+            function readStorage(key) {
+                try {
+                    const value = localStorage.getItem(key);
+                    return value ? JSON.parse(value) : null;
+                } catch {
+                    return null;
+                }
+            }
+
+            function writeStorage(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                } catch {
+                    // Trình duyệt không cho lưu thì vẫn hiển thị thông báo.
+                }
+            }
+
+            const storedSeen = readStorage(seenStorageKey);
+            const storedKnown = readStorage(knownStorageKey);
+
+            let seenIds = new Set(
+                Array.isArray(storedSeen)
+                    ? storedSeen.map(String)
+                    : []
+            );
+
+            let knownIds = new Set(
+                Array.isArray(storedKnown)
+                    ? storedKnown.map(String)
+                    : []
+            );
+
+            let initialized = false;
+            let notifications = [];
+            let isFetching = false;
+
+            function formatMoney(amount) {
+                return Number(amount || 0)
+                    .toLocaleString("vi-VN") + "đ";
+            }
+
+            function formatDate(dateValue) {
+                if (!dateValue) return "";
+
+                const date = new Date(dateValue);
+
+                if (Number.isNaN(date.getTime())) return "";
+
+                return date.toLocaleString("vi-VN");
+            }
+
+            function addText(parent, className, text) {
+                const element = document.createElement("div");
+                element.className = className;
+                element.textContent = text ?? "";
+                parent.appendChild(element);
+                return element;
+            }
+
+            function notificationId(item) {
+                return String(item.paymentId);
+            }
+
+            // ==============================
+            // CẬP NHẬT SỐ THÔNG BÁO CHƯA XEM
+            // ==============================
+            function updateNotificationCount() {
+                const unread = notifications.filter(
+                    item => !seenIds.has(notificationId(item))
+                ).length;
+
+                countElement.textContent =
+                    unread > 9 ? "9+" : String(unread);
+
+                countElement.classList.toggle(
+                    "d-none", unread === 0
+                );
+            }
+
+            // ==============================
+            // HIỂN THỊ DANH SÁCH THÔNG BÁO
+            // ==============================
+            function renderNotifications() {
+
+                notificationList.replaceChildren();
+
+                if (!notifications.length) {
+                    addText(
+                        notificationList,
+                        "text-center text-muted p-4",
+                        "Chưa có đơn hàng đã thanh toán."
+                    );
+                    return;
+                }
+
+                notifications.forEach(item => {
+
+                    const id = notificationId(item);
+                    const unread = !seenIds.has(id);
+
+                    const link = document.createElement("a");
+
+                    link.className =
+                        "admin-notification-item" +
+                        (unread ? " unread" : "");
+
+                    link.href = orderDetailsUrl +
+                        "?id=" + encodeURIComponent(item.orderId);
+
+                    addText(
+                        link,
+                        "item-title",
+                        "Đơn #" + item.orderId +
+                        " đã thanh toán thành công"
+                    );
+
+                    addText(
+                        link,
+                        "fw-bold text-success mt-1",
+                        formatMoney(item.amount)
+                    );
+
+                    addText(
+                        link,
+                        "item-meta mt-1",
+                        formatDate(item.paidAt) +
+                        " · " + (item.customerName || "Khách hàng")
+                    );
+
+                    const items = Array.isArray(item.items)
+                        ? item.items
+                        : [];
+
+                    if (items.length) {
+                        const itemList = document.createElement("div");
+                        itemList.className = "item-list";
+
+                        items.forEach(food => {
+                            addText(
+                                itemList,
+                                "mb-1",
+                                food.quantity + " × " +
+                                (food.name || "Món ăn")
+                            );
+
+                            if (food.note) {
+                                addText(
+                                    itemList,
+                                    "item-note",
+                                    "Ghi chú món: " + food.note
+                                );
+                            }
+                        });
+
+                        link.appendChild(itemList);
+                    }
+
+                    if (item.orderNote) {
+                        addText(
+                            link,
+                            "item-note",
+                            "Ghi chú đơn: " + item.orderNote
+                        );
+                    }
+
+                    notificationList.appendChild(link);
+                });
+            }
+
+            // ==============================
+            // HIỆN TOAST ĐƠN MỚI
+            // ==============================
+            function showOrderToast(item) {
+
+                const toastElement = document.createElement("div");
+
+                toastElement.className =
+                    "toast admin-order-toast bg-white shadow";
+
+                toastElement.setAttribute("role", "alert");
+                toastElement.setAttribute("aria-live", "assertive");
+
+                const header = document.createElement("div");
+                header.className = "toast-header";
+
+                const title = document.createElement("strong");
+                title.className = "me-auto text-success";
+                title.textContent = "Đơn hàng mới đã thanh toán";
+
+                const closeButton = document.createElement("button");
+                closeButton.type = "button";
+                closeButton.className = "btn-close";
+                closeButton.setAttribute("data-bs-dismiss", "toast");
+                closeButton.setAttribute("aria-label", "Đóng");
+
+                header.appendChild(title);
+                header.appendChild(closeButton);
+
+                const body = document.createElement("div");
+                body.className = "toast-body";
+
+                addText(
+                    body,
+                    "fw-bold mb-1",
+                    "Đơn #" + item.orderId
+                );
+
+                addText(
+                    body,
+                    "fw-bold text-success mb-2",
+                    formatMoney(item.amount)
+                );
+
+                const items = Array.isArray(item.items)
+                    ? item.items
+                    : [];
+
+                items.forEach(food => {
+
+                    addText(
+                        body,
+                        "small mb-1",
+                        food.quantity + " × " +
+                        (food.name || "Món ăn")
+                    );
+
+                    if (food.note) {
+                        addText(
+                            body,
+                            "small text-muted mb-1",
+                            "Ghi chú: " + food.note
+                        );
+                    }
+                });
+
+                if (item.orderNote) {
+                    addText(
+                        body,
+                        "small text-muted mt-2",
+                        "Ghi chú đơn: " + item.orderNote
+                    );
+                }
+
+                const detailLink = document.createElement("a");
+                detailLink.className =
+                    "btn btn-sm btn-outline-dark mt-3";
+
+                detailLink.href = orderDetailsUrl +
+                    "?id=" + encodeURIComponent(item.orderId);
+
+                detailLink.textContent = "Xem chi tiết";
+
+                body.appendChild(detailLink);
+
+                toastElement.appendChild(header);
+                toastElement.appendChild(body);
+
+                toastContainer.appendChild(toastElement);
+
+                const toast = new bootstrap.Toast(
+                    toastElement,
+                    { delay: 8000 }
+                );
+
+                toastElement.addEventListener(
+                    "hidden.bs.toast",
+                    function () {
+                        toastElement.remove();
+                    }
+                );
+
+                toast.show();
+            }
+            // lấy đơn từ server 
+            async function loadNotifications() {
+
+                if (isFetching) return;
+
+                isFetching = true;
+
+                try {
+                    const response = await fetch(notificationUrl, {
+                        method: "GET",
+                        cache: "no-store"
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Không thể tải thông báo."
+                        );
+                    }
+
+                    const result = await response.json();
+
+                    if (!result.success ||
+                        !Array.isArray(result.notifications)) {
+                        throw new Error(
+                            "Dữ liệu thông báo không hợp lệ."
+                        );
+                    }
+
+                    notifications = result.notifications;
+
+                    // Chỉ hiện Toast với đơn mới phát sinh
+                    // sau lần tải trước, tránh báo lại toàn bộ
+                    // lịch sử khi mở Admin lần đầu.
+                    const newPayments = notifications.filter(
+                        item => !knownIds.has(notificationId(item))
+                    );
+
+                    if (initialized || knownIds.size > 0) {
+                        // Giới hạn số toast trong một lần cập nhật
+                        newPayments.slice(0, 3).forEach(showOrderToast);
+                    }
+
+                    notifications.forEach(item => {
+                        knownIds.add(notificationId(item));
+                    });
+
+                    // Giới hạn dung lượng lưu ở trình duyệt
+                    writeStorage(
+                        knownStorageKey,
+                        Array.from(knownIds).slice(-200)
+                    );
+
+                    initialized = true;
+
+                    renderNotifications();
+                    updateNotificationCount();
+
+                } catch (error) {
+
+                    if (!initialized) {
+                        notificationList.replaceChildren();
+
+                        addText(
+                            notificationList,
+                            "text-center text-danger p-4",
+                            error.message
+                        );
+                    }
+
+                    console.error(error);
+
+                } finally {
+                    isFetching = false;
+                }
+            }
+
+            dropdownButton.addEventListener(
+                "shown.bs.dropdown",
+                function () {
+
+                    notifications.forEach(item => {
+                        seenIds.add(notificationId(item));
+                    });
+
+                    writeStorage(
+                        seenStorageKey,
+                        Array.from(seenIds).slice(-200)
+                    );
+
+                    renderNotifications();
+                    updateNotificationCount();
+                }
+            );
+
+            // Tải ngay khi mở trang
+            loadNotifications();
+
+            // Kiểm tra thông báo mới sau mỗi 10 giây
+            setInterval(loadNotifications, 10000);
+
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

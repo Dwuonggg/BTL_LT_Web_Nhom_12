@@ -1,51 +1,715 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "Mã giảm giá";
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Voucher.Voucher>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý Voucher";
+    var now = DateTime.Now;
 }
 
 <div class="card border-0 shadow-sm rounded-3 p-4">
+
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-0">Quản lý Mã Giảm Giá / Voucher</h5>
-        <button class="btn btn-danger">+ Tạo mã giảm giá</button>
+        <h5 class="fw-bold mb-0">
+            Quản lý Mã Giảm Giá / Voucher
+        </h5>
+
+        <button type="button"
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#createVoucherModal">
+            + Tạo mã giảm giá
+        </button>
     </div>
 
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Mã Voucher</th>
-                <th>Mức giảm</th>
-                <th>Áp dụng đơn từ</th>
-                <th>Số lượng</th>
-                <th>Hạn sử dụng</th>
-                <th>Trạng thái</th>
-                <th class="text-end">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong class="text-primary">SUONMUOI50K</strong></td>
-                <td>Giảm 50.000đ</td>
-                <td>Đơn từ 300.000đ</td>
-                <td>45/100 lượt</td>
-                <td>31/10/2026</td>
-                <td><span class="badge bg-success">Còn hạn</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-            <tr>
-                <td><strong class="text-primary">FREESHIP</strong></td>
-                <td>Miễn phí giao hàng</td>
-                <td>Đơn từ 200.000đ</td>
-                <td>100/100 lượt</td>
-                <td>15/10/2026</td>
-                <td><span class="badge bg-secondary">Hết lượt</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-dark me-1">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div id="voucherMessage"
+         class="alert d-none"
+         role="alert"></div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã Voucher</th>
+                    <th>Mức giảm</th>
+                    <th>Đơn tối thiểu</th>
+                    <th>Đã sử dụng</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7"
+                            class="text-center text-muted py-4">
+                            Chưa có mã giảm giá nào.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var voucher in Model)
+                    {
+                        bool inDateRange =
+                            voucher.StartDate <= now &&
+                            now <= voucher.EndDate;
+
+                        string statusText;
+
+                        if (!voucher.IsActive)
+                        {
+                            statusText = "Đã tắt";
+                        }
+                        else if (now < voucher.StartDate)
+                        {
+                            statusText = "Chưa bắt đầu";
+                        }
+                        else if (now > voucher.EndDate)
+                        {
+                            statusText = "Hết hạn";
+                        }
+                        else
+                        {
+                            statusText = "Đang hoạt động";
+                        }
+
+                        string statusClass =
+                            voucher.IsActive && inDateRange
+                                ? "btn-success"
+                                : "btn-secondary";
+
+                        <tr>
+                            <!-- MÃ VOUCHER -->
+                            <td>
+                                <strong class="text-primary">
+                                    @voucher.Code
+                                </strong>
+
+                                <div class="small text-muted">
+                                    @voucher.Title
+                                </div>
+                            </td>
+
+                            <!-- MỨC GIẢM -->
+                            <td>
+                                <strong>
+                                    @voucher.DiscountPercent.ToString("0.##")%
+                                </strong>
+
+                                <div class="small text-muted">
+                                    Tối đa
+                                    @voucher.MaxDiscountAmount.ToString("N0")đ
+                                </div>
+                            </td>
+
+                            <!-- ĐƠN TỐI THIỂU -->
+                            <td>
+                                @voucher.MinOrderAmount.ToString("N0")đ
+                            </td>
+
+                            <!-- SỐ LẦN ĐÃ DÙNG -->
+                            <td>
+                                @voucher.VoucherUsages.Count lượt
+                            </td>
+
+                            <!-- THỜI GIAN -->
+                            <td class="small">
+                                <div>
+                                    Từ:
+                                    @voucher.StartDate.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+
+                                <div>
+                                    Đến:
+                                    @voucher.EndDate.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </td>
+
+                            <!-- TRẠNG THÁI -->
+                            <td>
+                                <button type="button"
+                                        class="btn btn-sm voucher-toggle @statusClass"
+                                        data-id="@voucher.VoucherId"
+                                        data-start="@voucher.StartDate.ToString("yyyy-MM-ddTHH:mm:ss")"
+                                        data-end="@voucher.EndDate.ToString("yyyy-MM-ddTHH:mm:ss")"
+                                        data-url="@Url.Action("ToggleActive", "Voucher", new { area = "Admin" })">
+                                    @statusText
+                                </button>
+                            </td>
+
+                            <!-- THAO TÁC -->
+                            <td class="text-end">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-dark me-1 edit-voucher"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editVoucherModal"
+
+                                        data-id="@voucher.VoucherId"
+                                        data-code="@voucher.Code"
+                                        data-title="@voucher.Title"
+                                        data-description="@voucher.Description"
+
+                                        data-percent="@voucher.DiscountPercent.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                        data-max="@voucher.MaxDiscountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                        data-min="@voucher.MinOrderAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+
+                                        data-start="@voucher.StartDate.ToString("yyyy-MM-ddTHH:mm")"
+                                        data-end="@voucher.EndDate.ToString("yyyy-MM-ddTHH:mm")"
+                                        data-active="@voucher.IsActive.ToString().ToLowerInvariant()">
+                                    Sửa
+                                </button>
+
+                                <form asp-area="Admin"
+                                      asp-controller="Voucher"
+                                      asp-action="Delete"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa Voucher này?');">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@voucher.VoucherId" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<div class="modal fade"
+     id="createVoucherModal"
+     tabindex="-1"
+     aria-labelledby="createVoucherTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form asp-area="Admin"
+                  asp-controller="Voucher"
+                  asp-action="Create"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"
+                        id="createVoucherTitle">
+                        Tạo mã giảm giá
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Đóng"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+
+                        <!-- MÃ -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Mã Voucher
+                            </label>
+
+                            <input type="text"
+                                   name="code"
+                                   class="form-control"
+                                   maxlength="50"
+                                   placeholder="LUAMOC20"
+                                   required />
+                        </div>
+
+                        <!-- TÊN -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Tên chương trình
+                            </label>
+
+                            <input type="text"
+                                   name="title"
+                                   class="form-control"
+                                   maxlength="150"
+                                   placeholder="Giảm 20% đơn hàng"
+                                   required />
+                        </div>
+
+                        <!-- MÔ TẢ -->
+                        <div class="col-12">
+                            <label class="form-label">
+                                Mô tả
+                            </label>
+
+                            <textarea name="description"
+                                      class="form-control"
+                                      maxlength="500"
+                                      rows="2"></textarea>
+                        </div>
+
+                        <!-- PHẦN TRĂM -->
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Giảm (%)
+                            </label>
+
+                            <input type="number"
+                                   name="discountPercent"
+                                   class="form-control"
+                                   min="0.01"
+                                   max="100"
+                                   step="0.01"
+                                   placeholder="20"
+                                   required />
+                        </div>
+
+                        <!-- GIẢM TỐI ĐA -->
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Giảm tối đa (đ)
+                            </label>
+
+                            <input type="number"
+                                   name="maxDiscountAmount"
+                                   class="form-control"
+                                   min="1"
+                                   step="1"
+                                   placeholder="70000"
+                                   required />
+                        </div>
+
+                        <!-- ĐƠN TỐI THIỂU -->
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Đơn tối thiểu (đ)
+                            </label>
+
+                            <input type="number"
+                                   name="minOrderAmount"
+                                   class="form-control"
+                                   min="0"
+                                   step="1"
+                                   value="0"
+                                   required />
+                        </div>
+
+                        <!-- NGÀY BẮT ĐẦU -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Ngày bắt đầu
+                            </label>
+
+                            <input type="datetime-local"
+                                   name="startDate"
+                                   class="form-control"
+                                   required />
+                        </div>
+
+                        <!-- NGÀY KẾT THÚC -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Ngày kết thúc
+                            </label>
+
+                            <input type="datetime-local"
+                                   name="endDate"
+                                   class="form-control"
+                                   required />
+                        </div>
+
+                        <!-- KÍCH HOẠT -->
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox"
+                                       name="isActive"
+                                       value="true"
+                                       id="createVoucherActive"
+                                       class="form-check-input"
+                                       checked />
+
+                                <label for="createVoucherActive"
+                                       class="form-check-label">
+                                    Kích hoạt Voucher
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Tạo Voucher
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade"
+     id="editVoucherModal"
+     tabindex="-1"
+     aria-labelledby="editVoucherTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form asp-area="Admin"
+                  asp-controller="Voucher"
+                  asp-action="Edit"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="id"
+                       id="editVoucherId" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"
+                        id="editVoucherTitle">
+                        Sửa mã giảm giá
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Đóng"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+
+                        <!-- MÃ -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Mã Voucher
+                            </label>
+
+                            <input type="text"
+                                   name="code"
+                                   id="editVoucherCode"
+                                   class="form-control"
+                                   maxlength="50"
+                                   required />
+                        </div>
+
+                        <!-- TÊN -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Tên chương trình
+                            </label>
+
+                            <input type="text"
+                                   name="title"
+                                   id="editVoucherName"
+                                   class="form-control"
+                                   maxlength="150"
+                                   required />
+                        </div>
+
+                        <!-- MÔ TẢ -->
+                        <div class="col-12">
+                            <label class="form-label">
+                                Mô tả
+                            </label>
+
+                            <textarea name="description"
+                                      id="editVoucherDescription"
+                                      class="form-control"
+                                      maxlength="500"
+                                      rows="2"></textarea>
+                        </div>
+
+                        <!-- PHẦN TRĂM -->
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Giảm (%)
+                            </label>
+
+                            <input type="number"
+                                   name="discountPercent"
+                                   id="editVoucherPercent"
+                                   class="form-control"
+                                   min="0.01"
+                                   max="100"
+                                   step="0.01"
+                                   required />
+                        </div>
+
+                        <!-- GIẢM TỐI ĐA -->
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Giảm tối đa (đ)
+                            </label>
+
+                            <input type="number"
+                                   name="maxDiscountAmount"
+                                   id="editVoucherMax"
+                                   class="form-control"
+                                   min="1"
+                                   step="1"
+                                   required />
+                        </div>
+
+                        <!-- ĐƠN TỐI THIỂU -->
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Đơn tối thiểu (đ)
+                            </label>
+
+                            <input type="number"
+                                   name="minOrderAmount"
+                                   id="editVoucherMin"
+                                   class="form-control"
+                                   min="0"
+                                   step="1"
+                                   required />
+                        </div>
+
+                        <!-- NGÀY BẮT ĐẦU -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Ngày bắt đầu
+                            </label>
+
+                            <input type="datetime-local"
+                                   name="startDate"
+                                   id="editVoucherStart"
+                                   class="form-control"
+                                   required />
+                        </div>
+
+                        <!-- NGÀY KẾT THÚC -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Ngày kết thúc
+                            </label>
+
+                            <input type="datetime-local"
+                                   name="endDate"
+                                   id="editVoucherEnd"
+                                   class="form-control"
+                                   required />
+                        </div>
+
+                        <!-- KÍCH HOẠT -->
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox"
+                                       name="isActive"
+                                       value="true"
+                                       id="editVoucherActive"
+                                       class="form-check-input" />
+
+                                <label for="editVoucherActive"
+                                       class="form-check-label">
+                                    Kích hoạt Voucher
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Lưu thay đổi
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- TOKEN SỬ DỤNG CHO AJAX -->
+<form id="voucherAjaxToken" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".edit-voucher").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            document.getElementById("editVoucherId").value =
+                this.dataset.id;
+
+            document.getElementById("editVoucherCode").value =
+                this.dataset.code;
+
+            document.getElementById("editVoucherName").value =
+                this.dataset.title;
+
+            document.getElementById("editVoucherDescription").value =
+                this.dataset.description || "";
+
+            document.getElementById("editVoucherPercent").value =
+                this.dataset.percent;
+
+            document.getElementById("editVoucherMax").value =
+                this.dataset.max;
+
+            document.getElementById("editVoucherMin").value =
+                this.dataset.min;
+
+            document.getElementById("editVoucherStart").value =
+                this.dataset.start;
+
+            document.getElementById("editVoucherEnd").value =
+                this.dataset.end;
+
+            document.getElementById("editVoucherActive").checked =
+                this.dataset.active === "true";
+        });
+    });
+
+    document.querySelectorAll(".voucher-toggle").forEach(button => {
+
+        button.addEventListener("click", async function () {
+
+            const oldText = this.textContent;
+
+            this.disabled = true;
+            this.textContent = "Đang lưu...";
+
+            try {
+
+                const token = document.querySelector(
+                    '#voucherAjaxToken input[name="__RequestVerificationToken"]'
+                ).value;
+
+                const body = new URLSearchParams();
+
+                body.append("id", this.dataset.id);
+                body.append("__RequestVerificationToken", token);
+
+                const response = await fetch(this.dataset.url, {
+                    method: "POST",
+                    body: body
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || "Không thể cập nhật Voucher."
+                    );
+                }
+
+                const now = new Date();
+                const start = new Date(this.dataset.start);
+                const end = new Date(this.dataset.end);
+
+                let statusText = "";
+                let isUsable = false;
+
+                if (!result.isActive) {
+                    statusText = "Đã tắt";
+                }
+                else if (now < start) {
+                    statusText = "Chưa bắt đầu";
+                }
+                else if (now > end) {
+                    statusText = "Hết hạn";
+                }
+                else {
+                    statusText = "Đang hoạt động";
+                    isUsable = true;
+                }
+
+                this.textContent = statusText;
+
+                this.classList.toggle(
+                    "btn-success", isUsable
+                );
+
+                this.classList.toggle(
+                    "btn-secondary", !isUsable
+                );
+
+                // Đồng bộ trạng thái với Modal Sửa
+                const editButton = this.closest("tr")
+                    .querySelector(".edit-voucher");
+
+                if (editButton) {
+                    editButton.dataset.active =
+                        result.isActive ? "true" : "false";
+                }
+
+                const message = document.getElementById(
+                    "voucherMessage"
+                );
+
+                message.className = "alert alert-success";
+                message.textContent = result.message;
+
+            }
+            catch (error) {
+
+                this.textContent = oldText;
+
+                const message = document.getElementById(
+                    "voucherMessage"
+                );
+
+                message.className = "alert alert-danger";
+                message.textContent = error.message;
+            }
+            finally {
+                this.disabled = false;
+            }
+        });
+    });
+
+});
+</script>

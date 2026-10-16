@@ -18,14 +18,12 @@ namespace BTL_LT_Web_Nhom_12.Database
         // Menu
         public DbSet<Category> Categories { get; set; }
         public DbSet<Food> Foods { get; set; }
-        public DbSet<FoodOption> FoodOptions { get; set; }
         public DbSet<Combo> Combos { get; set; }
         public DbSet<ComboDetail> ComboDetails { get; set; }
 
         // Order
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
-        public DbSet<OrderDetailOption> OrderDetailOptions { get; set; }
 
         // Paymeent
         public DbSet<PaymentModel> Payments { get; set; }
@@ -102,13 +100,6 @@ namespace BTL_LT_Web_Nhom_12.Database
                 .HasForeignKey(od => od.ComboId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Không cho xóa tùy chọn món đã được sử dụng trong đơn
-            modelBuilder.Entity<OrderDetailOption>()
-                .HasOne(odo => odo.FoodOption)
-                .WithMany()
-                .HasForeignKey(odo => odo.FoodOptionId)
-                .OnDelete(DeleteBehavior.NoAction);
-
             // Không tự động xóa payment khi xóa order
             modelBuilder.Entity<PaymentModel>()
                 .HasOne(p => p.Order)
@@ -145,14 +136,7 @@ namespace BTL_LT_Web_Nhom_12.Database
                 .WithMany(c => c.Foods)
                 .HasForeignKey(f => f.CategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
-
-            // Food - FoodOption
-            modelBuilder.Entity<FoodOption>()
-                .HasOne(fo => fo.Food)
-                .WithMany(f => f.FoodOptions)
-                .HasForeignKey(fo => fo.FoodId)
-                .OnDelete(DeleteBehavior.NoAction);
-
+  
             // Combo - ComboDetail
             modelBuilder.Entity<ComboDetail>()
                 .HasOne(cd => cd.Combo)
@@ -172,13 +156,6 @@ namespace BTL_LT_Web_Nhom_12.Database
                 .HasOne(od => od.Order)
                 .WithMany(o => o.OrderDetails)
                 .HasForeignKey(od => od.OrderId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            // OrderDetail - OrderDetailOption
-            modelBuilder.Entity<OrderDetailOption>()
-                .HasOne(odo => odo.OrderDetail)
-                .WithMany(od => od.OrderDetailOptions)
-                .HasForeignKey(odo => odo.OrderDetailId)
                 .OnDelete(DeleteBehavior.NoAction);
         }
     }

@@ -1,0 +1,199 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Thêm Combo";
+
+    var foods = ViewBag.Foods
+        as List<BTL_LT_Web_Nhom_12.Models.Menu.Food>
+        ?? new List<BTL_LT_Web_Nhom_12.Models.Menu.Food>();
+}
+
+<div class="card border-0 shadow-sm rounded-3 p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">Thêm Combo mới</h5>
+
+        <a asp-area="Admin"
+           asp-controller="Combo"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Quay lại
+        </a>
+    </div>
+
+    <form asp-area="Admin"
+          asp-controller="Combo"
+          asp-action="Create"
+          method="post"
+          enctype="multipart/form-data"
+          id="createComboForm">
+
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <label class="form-label">Tên Combo</label>
+                <input type="text"
+                       name="name"
+                       class="form-control"
+                       maxlength="150"
+                       required
+                       placeholder="VD: Combo BBQ 2 người" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Giá Combo (VNĐ)</label>
+                <input type="text"
+                       name="price"
+                       class="form-control"
+                       inputmode="numeric"
+                       pattern="[0-9]+"
+                       required
+                       placeholder="399000" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Hình ảnh Combo</label>
+                <input type="file"
+                       name="imageFile"
+                       class="form-control"
+                       accept=".jpg,.jpeg,.png,.webp" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Trạng thái</label>
+                <select name="isActive" class="form-select">
+                    <option value="true">Đang bán</option>
+                    <option value="false">Ngừng bán</option>
+                </select>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Mô tả Combo</label>
+                <textarea name="description"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Nhập mô tả Combo..."></textarea>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label fw-bold">
+                    Chọn món ăn trong Combo
+                </label>
+
+                <div class="border rounded-3 p-3"
+                     style="max-height:350px;overflow-y:auto;">
+
+                    @if (foods.Any())
+                    {
+                        foreach (var food in foods)
+                        {
+                            <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+
+                                <input type="checkbox"
+                                       name="foodIds"
+                                       value="@food.FoodId"
+                                       class="form-check-input combo-food-checkbox"
+                                       id="food_@food.FoodId" />
+
+                                <label class="flex-grow-1"
+                                       for="food_@food.FoodId">
+                                    <strong>@food.Name</strong>
+                                    <div class="small text-muted">
+                                        @food.Price.ToString("N0")đ
+                                    </div>
+                                </label>
+
+                                <div style="width:100px;">
+                                    <input type="number"
+                                           name="quantities"
+                                           class="form-control combo-food-quantity"
+                                           value="1"
+                                           min="1"
+                                           step="1"
+                                           disabled />
+                                </div>
+
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">
+                            Chưa có món ăn đang bán để tạo Combo.
+                        </p>
+                    }
+                </div>
+
+                <small class="text-muted">
+                    Tích chọn món ăn và nhập số lượng tương ứng.
+                </small>
+            </div>
+
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a asp-area="Admin"
+               asp-controller="Combo"
+               asp-action="Index"
+               class="btn btn-secondary">
+                Hủy
+            </a>
+
+            <button type="submit" class="btn btn-danger">
+                Lưu Combo
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("createComboForm");
+
+    // Bật/tắt số lượng của món được chọn
+    form.querySelectorAll(".combo-food-checkbox")
+        .forEach(checkbox => {
+
+            checkbox.addEventListener("change", function () {
+                const row = this.closest(".d-flex");
+                const quantity = row.querySelector(".combo-food-quantity");
+
+                quantity.disabled = !this.checked;
+
+                if (!this.checked) {
+                    quantity.value = 1;
+                }
+            });
+        });
+
+    // Kiểm tra trước khi lưu
+    form.addEventListener("submit", function (event) {
+
+        const selected = form.querySelectorAll(
+            ".combo-food-checkbox:checked"
+        );
+
+        if (selected.length === 0) {
+            event.preventDefault();
+            alert("Vui lòng chọn ít nhất một món ăn.");
+            return;
+        }
+
+        for (const checkbox of selected) {
+            const quantity = checkbox.closest(".d-flex")
+                .querySelector(".combo-food-quantity");
+
+            if (!Number.isInteger(Number(quantity.value)) ||
+                Number(quantity.value) < 1) {
+                event.preventDefault();
+                alert("Số lượng món phải là số nguyên lớn hơn 0.");
+                return;
+            }
+        }
+    });
+
+});
+</script>

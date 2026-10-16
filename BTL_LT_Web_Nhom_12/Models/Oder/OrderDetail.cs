@@ -32,8 +32,5 @@ namespace BTL_LT_Web_Nhom_12.Models.Order
 
         [ForeignKey(nameof(ComboId))]
         public Combo? Combo { get; set; }
-
-        public ICollection<OrderDetailOption> OrderDetailOptions
-        { get; set; } = new List<OrderDetailOption>();
     }
 }
