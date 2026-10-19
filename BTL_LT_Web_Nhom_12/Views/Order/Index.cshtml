@@ -1,0 +1,184 @@
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Order.Order>
+
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<section class="container py-5">
+
+    <div class="mb-4">
+        <span class="eyebrow dark">LỬA MỘC DELIVERY</span>
+        <h1>Đơn hàng của tôi</h1>
+        <p class="text-muted">
+            Theo dõi trạng thái các đơn hàng của bạn.
+        </p>
+    </div>
+
+    @if (TempData["OrderSuccess"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["OrderSuccess"]
+        </div>
+    }
+
+    @if (TempData["OrderError"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["OrderError"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="border rounded-3 p-5 text-center">
+            <h3>Bạn chưa có đơn hàng nào</h3>
+            <p class="text-muted">
+                Khám phá thực đơn và chọn món yêu thích nhé!
+            </p>
+
+            <a asp-area=""
+               asp-controller="Menu"
+               asp-action="Index"
+               class="btn btn-brand">
+                Xem thực đơn
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+
+            @foreach (var order in Model)
+            {
+                bool isPaid =
+                    order.Payment?.PaymentStatus == "Paid";
+
+                string statusText = order.Status switch
+                {
+                    "Pending" => isPaid
+                        ? "Chờ chuẩn bị"
+                        : "Chờ thanh toán",
+
+                    "Preparing" => "Đang chuẩn bị",
+                    "Delivering" => "Đang giao",
+                    "Delivered" => "Hoàn thành",
+                    "Cancelled" => "Đã hủy",
+                    _ => order.Status
+                };
+
+                string statusClass = order.Status switch
+                {
+                    "Pending" => "bg-warning text-dark",
+                    "Preparing" => "bg-primary",
+                    "Delivering" => "bg-info text-dark",
+                    "Delivered" => "bg-success",
+                    "Cancelled" => "bg-secondary",
+                    _ => "bg-secondary"
+                };
+
+                <div class="col-12">
+                    <div class="border rounded-3 bg-white p-4 shadow-sm">
+
+                        <div class="d-flex flex-wrap
+                                    justify-content-between
+                                    align-items-center gap-2">
+
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    Đơn hàng #@order.OrderId
+                                </h5>
+
+                                <span class="text-muted small">
+                                    @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                                </span>
+                            </div>
+
+                            <span class="badge @statusClass">
+                                @statusText
+                            </span>
+                        </div>
+
+                        <hr />
+             
+                        <div class="d-flex flex-wrap
+                                    justify-content-between gap-3">
+
+                            <div>
+                                <p class="mb-1">
+                                    <strong>Người nhận:</strong>
+                                    @order.ReceiverName
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Thanh toán:</strong>
+
+                                    @if (isPaid)
+                                    {
+                                        <span class="text-success">
+                                            Đã thanh toán
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-warning">
+                                            Chưa thanh toán
+                                        </span>
+                                    }
+                                </p>
+
+                                <p class="mb-0 text-muted">
+                                    @order.DeliveryAddress
+                                </p>
+                            </div>
+
+                            <div class="text-end">
+                                <div class="text-muted small">
+                                    Tổng thanh toán
+                                </div>
+
+                                <h5 class="fw-bold text-danger">
+                                    @order.TotalAmount.ToString("N0") đ
+                                </h5>
+
+                                <a asp-area=""
+                                   asp-controller="Order"
+                                   asp-action="Details"
+                                   asp-route-id="@order.OrderId"
+                                   class="btn btn-outline-dark btn-sm">
+                                    Xem chi tiết
+                                </a>
+                            </div>
+
+                        </div>
+
+                        @if (isPaid && order.Status == "Delivering")
+                        {
+                            <hr />
+
+                            <form asp-area=""
+                                  asp-controller="Order"
+                                  asp-action="ConfirmReceived"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@order.OrderId" />
+
+                                <button type="submit"
+                                        class="btn btn-brand">
+                                    Đã nhận hàng
+                                </button>
+                            </form>
+                        }
+
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+
+</section>

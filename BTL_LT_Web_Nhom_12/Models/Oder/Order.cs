@@ -39,6 +39,18 @@ namespace BTL_LT_Web_Nhom_12.Models.Order
 
         public DateTime EstimatedCompletionTime { get; set; }
 
+        // Giữ nguyên chức năng tự hoàn thành sau 24 giờ
+        public DateTime? DeliveryStartedAt { get; set; }
+
+        // Voucher được chọn khi đặt đơn
+        // Null nghĩa là không sử dụng Voucher
+        public int? VoucherId { get; set; }
+
+        [ForeignKey(nameof(VoucherId))]
+        public BTL_LT_Web_Nhom_12.Models.Voucher.Voucher?
+            AppliedVoucher
+        { get; set; }
+
         [StringLength(500)]
         public string? Note { get; set; }
 
@@ -48,6 +60,8 @@ namespace BTL_LT_Web_Nhom_12.Models.Order
         public ICollection<OrderDetail> OrderDetails { get; set; }
             = new List<OrderDetail>();
 
-        public BTL_LT_Web_Nhom_12.Models.Payment.Payment? Payment { get; set; }
+        public BTL_LT_Web_Nhom_12.Models.Payment.Payment?
+            Payment
+        { get; set; }
     }
 }

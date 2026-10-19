@@ -11,6 +11,7 @@
 
 <div class="card border-0 shadow-sm rounded-3 p-4">
 
+    <!-- TIÊU ĐỀ VÀ BỘ LỌC -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
         <h5 class="fw-bold mb-0">
@@ -38,7 +39,7 @@
 
                 <option value="Pending"
                         selected="@(status == "Pending")">
-                    Chờ thanh toán
+                    Chờ chuẩn bị
                 </option>
 
                 <option value="Preparing"
@@ -53,7 +54,7 @@
 
                 <option value="Delivered"
                         selected="@(status == "Delivered")">
-                    Đã giao
+                    Hoàn thành
                 </option>
 
                 <option value="Cancelled"
@@ -73,14 +74,19 @@
                class="btn btn-sm btn-outline-secondary">
                 Đặt lại
             </a>
+
         </form>
     </div>
 
+    <!-- THÔNG BÁO -->
     <div id="orderMessage"
          class="alert d-none"
-         role="alert"></div>
+         role="alert">
+    </div>
 
+    <!-- DANH SÁCH ĐƠN HÀNG -->
     <div class="table-responsive">
+
         <table class="table table-hover align-middle">
 
             <thead class="table-light">
@@ -111,12 +117,19 @@
                 {
                     @foreach (var order in Model)
                     {
+                        bool isPaid =
+                            order.Payment?.PaymentStatus == "Paid";
+
+                        // TRẠNG THÁI ĐƠN HÀNG
                         string statusText = order.Status switch
                         {
-                            "Pending" => "Chờ thanh toán",
+                            "Pending" => isPaid
+                                ? "Chờ chuẩn bị"
+                                : "Chờ thanh toán",
+
                             "Preparing" => "Đang chuẩn bị",
                             "Delivering" => "Đang giao",
-                            "Delivered" => "Đã giao",
+                            "Delivered" => "Hoàn thành",
                             "Cancelled" => "Đã hủy",
                             _ => order.Status
                         };
@@ -131,6 +144,7 @@
                             _ => "bg-secondary"
                         };
 
+                        // TRẠNG THÁI THANH TOÁN
                         string paymentText =
                             order.Payment?.PaymentStatus switch
                             {
@@ -153,40 +167,46 @@
                                 _ => "bg-secondary"
                             };
 
-                        bool isPaid =
-                            order.Payment?.PaymentStatus == "Paid";
-
                         <tr data-order-id="@order.OrderId">
 
+                            <!-- MÃ ĐƠN -->
                             <td>
                                 <strong>#@order.OrderId</strong>
                             </td>
 
+                            <!-- KHÁCH HÀNG -->
                             <td>@order.ReceiverName</td>
 
+                            <!-- SỐ ĐIỆN THOẠI -->
                             <td>@order.ReceiverPhone</td>
 
+                            <!-- NGÀY ĐẶT -->
                             <td>
                                 @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
                             </td>
 
+                            <!-- TỔNG TIỀN -->
                             <td class="fw-bold text-danger">
                                 @order.TotalAmount.ToString("N0")đ
                             </td>
 
+                            <!-- THANH TOÁN -->
                             <td>
                                 <span class="badge @paymentClass">
                                     @paymentText
                                 </span>
                             </td>
 
+                            <!-- TRẠNG THÁI -->
                             <td>
                                 <span class="badge order-status @statusClass">
                                     @statusText
                                 </span>
                             </td>
 
+                            <!-- THAO TÁC -->
                             <td class="text-end">
+
                                 <div class="d-flex flex-wrap justify-content-end gap-1">
 
                                     <a asp-area="Admin"
@@ -197,37 +217,45 @@
                                         Chi tiết
                                     </a>
 
+                                    @* Đã thanh toán: bắt đầu chuẩn bị *@
+                                    @if (isPaid && order.Status == "Pending")
+                                    {
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning order-update"
+                                                data-id="@order.OrderId"
+                                                data-next="Preparing">
+                                            Bắt đầu chuẩn bị
+                                        </button>
+                                    }
+
+                                    @* Chuẩn bị xong: bàn giao vận chuyển *@
                                     @if (isPaid && order.Status == "Preparing")
                                     {
                                         <button type="button"
                                                 class="btn btn-sm btn-primary order-update"
                                                 data-id="@order.OrderId"
                                                 data-next="Delivering">
-                                            Chuyển giao
+                                            Giao hàng
                                         </button>
                                     }
 
-                                    @if (isPaid && order.Status == "Delivering")
-                                    {
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-success order-update"
-                                                data-id="@order.OrderId"
-                                                data-next="Delivered">
-                                            Xác nhận đã giao
-                                        </button>
-                                    }
+                                    @* Delivering:
+                                       Chỉ Customer được xác nhận đã nhận.
+                                       Admin không có nút hoàn thành. *@
 
                                 </div>
+
                             </td>
                         </tr>
                     }
                 }
+
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- TOKEN CHỐNG CSRF -->
+<!-- ANTI-FORGERY TOKEN -->
 <form id="orderAjaxToken" class="d-none">
     @Html.AntiForgeryToken()
 </form>
@@ -241,9 +269,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const updateUrl =
         '@Url.Action("UpdateStatus", "Order", new { area = "Admin" })';
 
-    const token = document.querySelector(
+    const tokenInput = document.querySelector(
         '#orderAjaxToken input[name="__RequestVerificationToken"]'
-    ).value;
+    );
+
+    if (!tableBody || !tokenInput) return;
+
+    const token = tokenInput.value;
 
     function showMessage(text, success) {
         messageBox.className = success
@@ -262,20 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const id = button.dataset.id;
         const newStatus = button.dataset.next;
 
-        let confirmText = "";
-
-        if (newStatus === "Delivering") {
-            confirmText = "Xác nhận đơn đang được giao cho khách?";
-        }
-        else if (newStatus === "Delivered") {
-            confirmText =
-                "Bạn đã kiểm tra và xác nhận khách thực sự nhận được hàng?";
-        }
-
-        if (!confirm(confirmText)) return;
-
-        const row = button.closest("tr");
-
+        // KHÔNG HIỂN THỊ HỘP THOẠI CONFIRM
         button.disabled = true;
 
         try {
@@ -294,46 +313,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!response.ok || !result.success) {
                 throw new Error(
-                    result.message || "Cập nhật thất bại."
+                    result.message || "Cập nhật trạng thái thất bại."
                 );
             }
 
-            const badge = row.querySelector(".order-status");
-            const actions = button.parentElement;
-
-            if (result.status === "Delivering") {
-
-                badge.textContent = "Đang giao";
-                badge.className =
-                    "badge order-status bg-info text-dark";
-
-                button.textContent = "Xác nhận đã giao";
-                button.dataset.next = "Delivered";
-                button.className =
-                    "btn btn-sm btn-outline-success order-update";
-
-                button.disabled = false;
-            }
-            else if (result.status === "Delivered") {
-
-                badge.textContent = "Đã giao";
-                badge.className =
-                    "badge order-status bg-success";
-
-                button.remove();
-            }
-            else {
-  
-                window.location.reload();
-                return;
-            }
-
-            showMessage(result.message, true);
+            // Thành công: tải lại để cập nhật
+            // trạng thái và các nút thao tác.
+            window.location.reload();
 
         } catch (error) {
 
             button.disabled = false;
-            showMessage(error.message, false);
+
+            showMessage(
+                error.message || "Có lỗi xảy ra.",
+                false
+            );
         }
     });
 });

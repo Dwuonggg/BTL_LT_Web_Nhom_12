@@ -1,0 +1,145 @@
+﻿
+@model BTL_LT_Web_Nhom_12.Models.Menu.Food
+@using System.Globalization
+
+@{
+    ViewData["Title"] = Model.Name;
+
+    bool isAvailable = Model.Status == "Available"
+                       && Model.Category != null
+                       && Model.Category.IsActive;
+
+    string priceValue = Model.Price.ToString(CultureInfo.InvariantCulture);
+}
+
+<section class="section container detail-layout">
+
+    <!-- Ảnh món ăn -->
+    <div class="detail-image">
+        <img src="@Model.ImageUrl"
+             alt="@Model.Name" />
+    </div>
+
+    <!-- Thông tin món ăn -->
+    <div class="detail-content">
+
+        <a class="text-link"
+           asp-area=""
+           asp-controller="Menu"
+           asp-action="Index">
+            Quay lại thực đơn
+        </a>
+
+        <div class="food-category mt-3">
+            @Model.Category?.Name
+        </div>
+
+        <h1>@Model.Name</h1>
+
+        <p>@Model.Description</p>
+
+        <div class="detail-price">
+            @Model.Price.ToString("N0")đ
+        </div>
+
+        <div class="availability">
+            @if (isAvailable)
+            {
+                <span>Đang bán</span>
+            }
+            else
+            {
+                <span>Tạm hết hàng</span>
+            }
+        </div>
+
+        <!-- FORM THÊM VÀO GIỎ HÀNG -->
+        <form asp-area=""
+              asp-controller="Cart"
+              asp-action="Add"
+              method="post"
+              id="add-cart-form"
+              data-price="@priceValue">
+
+            @Html.AntiForgeryToken()
+
+            <!-- Thông tin sản phẩm -->
+            <input type="hidden"
+                   name="type"
+                   value="Food" />
+
+            <input type="hidden"
+                   name="id"
+                   value="@Model.FoodId" />
+
+            <!-- Số lượng -->
+            <label class="form-label mt-3"
+                   for="food-qty">
+                Số lượng
+            </label>
+
+            <div class="quantity-control">
+                <button type="button"
+                        id="qty-minus">
+                    -
+                </button>
+
+                <input id="food-qty"
+                       name="quantity"
+                       type="number"
+                       value="1"
+                       min="1"
+                       max="20"
+                       step="1" />
+
+                <button type="button"
+                        id="qty-plus">
+                    +
+                </button>
+            </div>
+
+            <!-- Ghi chú -->
+            <label class="form-label mt-3"
+                   for="food-note">
+                Ghi chú món ăn
+            </label>
+
+            <textarea id="food-note"
+                      name="note"
+                      class="form-control"
+                      rows="2"
+                      maxlength="250"
+                      placeholder="Ví dụ: ít cay, không hành..."></textarea>
+
+            <!-- Tạm tính -->
+            <div class="detail-total mt-3">
+                Tạm tính:
+                <strong id="food-total">
+                    @Model.Price.ToString("N0")đ
+                </strong>
+            </div>
+
+            <!-- Thêm vào giỏ hàng -->
+            <button id="add-to-cart"
+                    type="submit"
+                    class="btn btn-brand btn-lg w-100 mt-3"
+                    disabled="@(!isAvailable)">
+                Thêm vào giỏ hàng
+            </button>
+
+        </form>
+
+        @if (!isAvailable)
+        {
+            <p class="text-danger mt-2">
+                Sản phẩm hiện không thể đặt hàng.
+            </p>
+        }
+
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/detail.js"
+            asp-append-version="true"></script>
+}

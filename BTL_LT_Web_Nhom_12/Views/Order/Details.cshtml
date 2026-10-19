@@ -1,0 +1,339 @@
+﻿@model BTL_LT_Web_Nhom_12.Models.Order.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+
+    bool isPaid = Model.Payment?.PaymentStatus == "Paid";
+
+    string statusText = Model.Status switch
+    {
+        "Pending" => isPaid
+            ? "Chờ chuẩn bị"
+            : "Chờ thanh toán",
+
+        "Preparing" => "Đang chuẩn bị",
+        "Delivering" => "Đang giao",
+        "Delivered" => "Hoàn thành",
+        "Cancelled" => "Đã hủy",
+        _ => Model.Status
+    };
+
+    string statusClass = Model.Status switch
+    {
+        "Pending" => "bg-warning text-dark",
+        "Preparing" => "bg-primary",
+        "Delivering" => "bg-info text-dark",
+        "Delivered" => "bg-success",
+        "Cancelled" => "bg-secondary",
+        _ => "bg-secondary"
+    };
+}
+
+<section class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <!-- TIÊU ĐỀ -->
+            <div class="mb-4">
+
+                <a asp-area=""
+                   asp-controller="Order"
+                   asp-action="Index"
+                   class="text-decoration-none text-muted">
+                    ← Đơn hàng của tôi
+                </a>
+
+                <h1 class="mt-3">
+                    Chi tiết đơn hàng #@Model.OrderId
+                </h1>
+
+                <p class="text-muted">
+                    Ngày đặt:
+                    @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                </p>
+
+            </div>
+
+            <!-- THÔNG BÁO -->
+            @if (TempData["OrderSuccess"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["OrderSuccess"]
+                </div>
+            }
+
+            @if (TempData["OrderError"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["OrderError"]
+                </div>
+            }
+
+            <!-- TRẠNG THÁI ĐƠN HÀNG -->
+            <div class="border rounded-3 p-4 mb-4 bg-white shadow-sm">
+
+                <h4 class="mb-3">
+                    Trạng thái đơn hàng
+                </h4>
+
+                <div class="d-flex justify-content-between
+                            align-items-center mb-3">
+
+                    <span>Trạng thái</span>
+
+                    <span class="badge @statusClass">
+                        @statusText
+                    </span>
+
+                </div>
+
+                <div class="d-flex justify-content-between
+                            align-items-center">
+
+                    <span>Thanh toán</span>
+
+                    @if (isPaid)
+                    {
+                        <span class="badge bg-success">
+                            Đã thanh toán
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">
+                            Chưa thanh toán
+                        </span>
+                    }
+
+                </div>
+
+                @if (isPaid && Model.Status == "Delivering")
+                {
+                    <hr />
+
+                    <p class="text-muted">
+                        Nếu bạn đã nhận được đơn hàng,
+                        vui lòng xác nhận bên dưới.
+                    </p>
+
+                    <form asp-area=""
+                          asp-controller="Order"
+                          asp-action="ConfirmReceived"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@Model.OrderId" />
+
+                        <button type="submit"
+                                class="btn btn-brand">
+                            Đã nhận hàng
+                        </button>
+
+                    </form>
+                }
+
+                @if (!isPaid &&
+                     Model.Status == "Pending")
+                {
+                    <hr />
+
+                    <a asp-area=""
+                       asp-controller="DemoPayment"
+                       asp-action="Index"
+                       asp-route-id="@Model.OrderId"
+                       class="btn btn-outline-brand">
+                        Tiếp tục thanh toán
+                    </a>
+                }
+
+            </div>
+
+            <!-- THÔNG TIN GIAO HÀNG -->
+            <div class="border rounded-3 p-4 mb-4 bg-white shadow-sm">
+
+                <h4 class="mb-3">
+                    Thông tin giao hàng
+                </h4>
+
+                <p class="mb-2">
+                    <strong>Người nhận:</strong>
+                    @Model.ReceiverName
+                </p>
+
+                <p class="mb-2">
+                    <strong>Số điện thoại:</strong>
+                    @Model.ReceiverPhone
+                </p>
+
+                <p class="mb-2">
+                    <strong>Địa chỉ giao hàng:</strong>
+                    @Model.DeliveryAddress
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Note))
+                {
+                    <p class="mb-0">
+                        <strong>Ghi chú đơn hàng:</strong>
+                        @Model.Note
+                    </p>
+                }
+
+            </div>
+
+            <!-- CHI TIẾT CÁC MÓN -->
+            <div class="border rounded-3 p-4 mb-4 bg-white shadow-sm">
+
+                <h4 class="mb-4">
+                    Các món đã đặt
+                </h4>
+
+                @if (Model.OrderDetails == null ||
+                     !Model.OrderDetails.Any())
+                {
+                    <div class="alert alert-warning">
+                        Không tìm thấy chi tiết món ăn
+                        của đơn hàng này.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+
+                        <table class="table align-middle">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Món ăn / Combo</th>
+                                    <th class="text-center">
+                                        Số lượng
+                                    </th>
+                                    <th class="text-end">
+                                        Đơn giá
+                                    </th>
+                                    <th class="text-end">
+                                        Thành tiền
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var item in Model.OrderDetails
+                                    .OrderBy(d => d.OrderDetailId))
+                                {
+                                    string productName =
+                                        item.Food?.Name
+                                        ?? item.Combo?.Name
+                                        ?? "Sản phẩm không còn tồn tại";
+
+                                    string productType =
+                                        item.FoodId.HasValue
+                                        ? "Món ăn"
+                                        : "Combo";
+
+                                    decimal lineTotal =
+                                        item.UnitPrice * item.Quantity;
+
+                                    <tr>
+
+                                        <!-- TÊN MÓN -->
+                                        <td>
+                                            <strong>
+                                                @productName
+                                            </strong>
+
+                                            <div class="text-muted small">
+                                                @productType
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(item.Note))
+                                            {
+                                                <div class="text-muted small mt-1">
+                                                    Ghi chú: @item.Note
+                                                </div>
+                                            }
+                                        </td>
+
+                                        <!-- SỐ LƯỢNG -->
+                                        <td class="text-center">
+                                            @item.Quantity
+                                        </td>
+
+                                        <!-- ĐƠN GIÁ -->
+                                        <td class="text-end text-nowrap">
+                                            @item.UnitPrice.ToString("N0") đ
+                                        </td>
+
+                                        <!-- THÀNH TIỀN -->
+                                        <td class="text-end fw-bold text-nowrap">
+                                            @lineTotal.ToString("N0") đ
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+                        </table>
+
+                    </div>
+                }
+
+                <!-- TỔNG TIỀN -->
+                <div class="mt-4">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính</span>
+                        <span>
+                            @Model.Subtotal.ToString("N0") đ
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Giảm giá</span>
+                        <span>
+                            -@Model.DiscountAmount.ToString("N0") đ
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Phí giao hàng</span>
+                        <span>
+                            @Model.DeliveryFee.ToString("N0") đ
+                        </span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between
+                                align-items-center">
+
+                        <h5 class="mb-0">
+                            Tổng thanh toán
+                        </h5>
+
+                        <h4 class="fw-bold text-danger mb-0">
+                            @Model.TotalAmount.ToString("N0") đ
+                        </h4>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- QUAY LẠI -->
+            <a asp-area=""
+               asp-controller="Order"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Quay lại đơn hàng
+            </a>
+
+        </div>
+    </div>
+
+</section>

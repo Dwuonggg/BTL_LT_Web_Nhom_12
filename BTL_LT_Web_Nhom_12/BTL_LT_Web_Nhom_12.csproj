@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Home\" />
-    <Folder Include="Views\Menu\" />
-    <Folder Include="Views\Combo\" />
-    <Folder Include="Views\Cart\" />
-    <Folder Include="Views\Checkout\" />
-    <Folder Include="Views\Order\" />
-    <Folder Include="Views\Promotion\" />
     <Folder Include="wwwroot\images\foods\" />
     <Folder Include="wwwroot\images\categories\" />
   </ItemGroup>
@@ -28,6 +21,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="QRCoder" Version="1.8.1" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,149 @@
+﻿
+@model BTL_LT_Web_Nhom_12.ViewModels.HomeViewModel
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<!-- Banner chính -->
+<section class="hero-banner">
+    <div class="hero-shade"></div>
+
+    <div class="container hero-content">
+
+        <span class="eyebrow">
+            BBQ • MÓN NƯỚNG • COMBO
+        </span>
+
+        <h1>
+            Đậm vị nướng
+            <br />
+            <em>Nóng hổi tận nhà</em>
+        </h1>
+
+        <p>
+            Sườn nướng BBQ và những món ngon được
+            chuẩn bị chỉn chu, giao đến tận cửa nhà bạn.
+        </p>
+
+        <a class="btn btn-brand btn-lg"
+           asp-area=""
+           asp-controller="Menu"
+           asp-action="Index">
+            Đặt món ngay
+        </a>
+
+    </div>
+</section>
+
+<!-- Món ăn nổi bật -->
+<section class="section container">
+
+    <div class="section-heading">
+
+        <div>
+            <span class="eyebrow dark">
+                ĐƯỢC YÊU THÍCH
+            </span>
+
+            <h2>Món ăn nổi bật</h2>
+
+            <p>
+                Hương vị khiến mỗi bữa ăn thêm đáng nhớ.
+            </p>
+        </div>
+
+        <a class="text-link"
+           asp-area=""
+           asp-controller="Menu"
+           asp-action="Index">
+            Xem toàn bộ thực đơn
+        </a>
+
+    </div>
+
+    <div class="row g-4">
+
+        @foreach (var food in Model.FeaturedFoods)
+        {
+            <div class="col-12 col-sm-6 col-lg-4">
+                <partial name="_FoodCard" model="food" />
+            </div>
+        }
+
+    </div>
+
+    @if (!Model.FeaturedFoods.Any())
+    {
+        <div class="text-center py-5">
+            <p class="text-muted mb-0">
+                Hiện chưa có món ăn nổi bật.
+            </p>
+        </div>
+    }
+
+</section>
+
+<!-- Giới thiệu Combo -->
+<section class="combo-feature">
+
+    <div class="container combo-feature-inner">
+
+        <div>
+            <span class="eyebrow">
+                CHỌN NHANH • ĂN NGON
+            </span>
+
+            <h2>
+                Trọn vị trong
+                <br />
+                một combo
+            </h2>
+
+            <p>
+                Kết hợp những món nướng được yêu thích,
+                tiện lợi cho bữa ăn tại nhà.
+            </p>
+
+            <a class="btn btn-light"
+               asp-area=""
+               asp-controller="Combo"
+               asp-action="Index">
+                Khám phá combo
+            </a>
+        </div>
+
+        <img src="https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=1100&q=85"
+             alt="Combo món nướng"
+             loading="lazy" />
+
+    </div>
+</section>
+
+<!-- Ưu đãi -->
+<section class="section container">
+
+    <div class="offer-strip">
+
+        <div>
+            <span class="eyebrow dark">
+                ƯU ĐÃI THEO MÙA
+            </span>
+
+            <h2 class="offer-title">Thêm niềm vui cho mỗi bữa ngon</h2>
+
+            <p>
+                Khám phá chương trình ưu đãi
+                đang diễn ra tại LỬA MỘC.
+            </p>
+        </div>
+
+        <a class="btn btn-brand"
+           asp-area=""
+           asp-controller="Promotion"
+           asp-action="Index">
+            Xem ưu đãi
+        </a>
+
+    </div>
+</section>

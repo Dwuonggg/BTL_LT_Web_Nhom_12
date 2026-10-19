@@ -1,6 +1,7 @@
 using BTL_LT_Web_Nhom_12.Database;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using BTL_LT_Web_Nhom_12.Services;
 var builder = WebApplication.CreateBuilder(args);
 // MVC
 builder.Services.AddControllersWithViews();
@@ -37,7 +38,7 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
-
+builder.Services.AddHostedService<OrderBackgroundService>();
 var app = builder.Build();
 // Middleware
 if (!app.Environment.IsDevelopment())
@@ -70,5 +71,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 ).WithStaticAssets();
-
+foreach (var endpoint in app.Services
+    .GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>()
+    .Endpoints)
+{
+    Console.WriteLine($"ROUTE: {endpoint.DisplayName}");
+}
+app.MapGet("/test-customer", () => "SERVER CUSTOMER OK");
 app.Run();

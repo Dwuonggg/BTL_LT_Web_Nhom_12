@@ -1,0 +1,187 @@
+﻿
+/* ==================================
+   LUA MOC - CUSTOMER ACCOUNT
+   Login / Register / Profile
+   ================================== */
+
+/* Đăng nhập và đăng ký */
+
+.auth-wrap {
+    min-height: 75vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    background: #f8eee5;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 470px;
+    padding: 40px;
+    background: #ffffff;
+    border: 1px solid #eee0d5;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(52, 30, 20, 0.08);
+}
+
+    .auth-card h1 {
+        margin: 12px 0;
+        color: #312925;
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 30px;
+        font-weight: 700;
+    }
+
+.auth-description {
+    margin-bottom: 25px;
+    color: #766d68;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* Ô nhập liệu */
+
+.auth-card .form-label {
+    color: #312925;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auth-card .form-control {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #ded2c9;
+    border-radius: 8px;
+    padding: 10px 13px;
+}
+
+    .auth-card .form-control:focus {
+        border-color: #a8442e;
+        box-shadow: 0 0 0 3px rgba(168, 68, 46, 0.12);
+    }
+
+/* Nút đăng nhập / đăng ký */
+
+.auth-card .btn-brand {
+    min-height: 46px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* Chuyển giữa đăng nhập và đăng ký */
+
+.auth-switch {
+    margin: 22px 0 0;
+    color: #766d68;
+    text-align: center;
+    font-size: 14px;
+}
+
+    .auth-switch a {
+        color: #a8442e;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+/* Trang thông tin cá nhân */
+
+.profile-container {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+    .profile-container h1 {
+        color: #312925;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+.profile-card {
+    padding: 35px;
+    background: #ffffff;
+    border: 1px solid #eee0d5;
+    border-radius: 16px;
+}
+
+    .profile-card h4 {
+        margin-bottom: 20px;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+.profile-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+    .profile-info span {
+        color: #766d68;
+    }
+
+    .profile-info strong {
+        color: #312925;
+    }
+
+/* Responsive */
+
+@media (max-width: 576px) {
+    .auth-wrap {
+        padding: 35px 15px;
+    }
+
+    .auth-card {
+        padding: 25px 20px;
+    }
+
+        .auth-card h1 {
+            font-size: 26px;
+        }
+
+    .profile-card {
+        padding: 22px;
+    }
+
+    .profile-info {
+        flex-direction: column;
+    }
+}
+.password-field {
+    position: relative;
+}
+
+    .password-field .form-control {
+        padding-right: 65px;
+    }
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #a8442e;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .password-toggle:hover {
+        color: #8b3524;
+    }
+.forgot-password {
+    font-size: 13px;
+    color: #a8442e;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .forgot-password:hover {
+        text-decoration: underline;
+    }

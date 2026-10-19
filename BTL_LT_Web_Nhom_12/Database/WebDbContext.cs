@@ -37,7 +37,7 @@ namespace BTL_LT_Web_Nhom_12.Database
 
         // OpeningHour
         public DbSet<OpeningHour> OpeningHours { get; set; }
-
+        public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -157,6 +157,11 @@ namespace BTL_LT_Web_Nhom_12.Database
                 .WithMany(o => o.OrderDetails)
                 .HasForeignKey(od => od.OrderId)
                 .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<PasswordResetOtp>()
+                .HasOne<Customer>()
+                .WithMany()
+                .HasForeignKey(otp => otp.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

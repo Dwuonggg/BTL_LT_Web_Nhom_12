@@ -1,0 +1,173 @@
+﻿
+@model BTL_LT_Web_Nhom_12.Models.Menu.Combo
+
+@{
+    ViewData["Title"] = Model.Name;
+
+    var items = Model.ComboDetails
+        .OrderBy(d => d.ComboDetailId)
+        .ToList();
+}
+
+<section class="container py-5">
+
+    <a asp-area=""
+       asp-controller="Combo"
+       asp-action="Index"
+       class="text-decoration-none text-muted">
+        ← Quay lại danh sách Combo
+    </a>
+
+    <div class="row g-5 mt-2">
+
+        <!-- HÌNH ẢNH -->
+        <div class="col-lg-6">
+
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl"
+                     alt="@Model.Name"
+                     class="img-fluid w-100 rounded-4 shadow-sm"
+                     style="aspect-ratio: 1 / 1;
+                            object-fit: cover;" />
+            }
+            else
+            {
+                <div class="bg-light rounded-4
+                            d-flex justify-content-center
+                            align-items-center"
+                     style="aspect-ratio:1/1;">
+                    <span class="text-muted">
+                        Chưa có hình ảnh
+                    </span>
+                </div>
+            }
+
+        </div>
+
+        <!-- THÔNG TIN COMBO -->
+        <div class="col-lg-6">
+
+            <span class="eyebrow dark">
+                LỬA MỘC DELIVERY
+            </span>
+
+            <h1 class="fw-bold mt-3">
+                @Model.Name
+            </h1>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p class="text-muted mt-3">
+                    @Model.Description
+                </p>
+            }
+
+            <h2 class="fw-bold text-danger my-4">
+                @Model.Price.ToString("N0") đ
+            </h2>
+
+            <hr />
+
+            <!-- THÀNH PHẦN COMBO -->
+            <h4 class="fw-bold mb-3">
+                Combo bao gồm
+            </h4>
+
+            @if (items.Any())
+            {
+                <div class="mb-4">
+
+                    @foreach (var detail in items)
+                    {
+                        <div class="d-flex justify-content-between
+                                    align-items-start gap-3
+                                    border-bottom py-3">
+
+                            <div>
+                                <strong>
+                                    @(detail.Food?.Name
+                                        ?? "Món ăn không còn tồn tại")
+                                </strong>
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                    detail.Food?.Description))
+                                {
+                                    <p class="text-muted small mb-0 mt-1">
+                                        @detail.Food.Description
+                                    </p>
+                                }
+                            </div>
+
+                            <strong class="text-nowrap">
+                                × @detail.Quantity
+                            </strong>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">
+                    Combo chưa được cập nhật thành phần.
+                </p>
+            }
+
+            <!-- THÊM VÀO GIỎ HÀNG -->
+            <form asp-area=""
+                  asp-controller="Cart"
+                  asp-action="Add"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="type"
+                       value="Combo" />
+
+                <input type="hidden"
+                       name="id"
+                       value="@Model.ComboId" />
+
+                <div class="mb-3">
+                    <label for="comboQuantity"
+                           class="form-label fw-bold">
+                        Số lượng Combo
+                    </label>
+
+                    <input type="number"
+                           id="comboQuantity"
+                           name="quantity"
+                           value="1"
+                           min="1"
+                           max="50"
+                           class="form-control"
+                           style="max-width:120px;" />
+                </div>
+
+                <div class="mb-4">
+                    <label for="comboNote"
+                           class="form-label fw-bold">
+                        Ghi chú
+                    </label>
+
+                    <textarea id="comboNote"
+                              name="note"
+                              class="form-control"
+                              rows="3"
+                              maxlength="250"
+                              placeholder="Yêu cầu thêm cho Combo..."></textarea>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-brand w-100 py-3">
+                    Thêm Combo vào giỏ hàng
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+</section>

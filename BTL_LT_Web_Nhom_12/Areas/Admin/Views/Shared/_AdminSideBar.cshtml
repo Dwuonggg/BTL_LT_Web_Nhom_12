@@ -69,16 +69,18 @@
             <p>Đậm vị nướng - Nóng hổi tận nhà</p>
         </div>
 
-        <form asp-area="" asp-controller="Account"
-              asp-action="Logout" method="post">
+        <form asp-area=""
+              asp-controller="Account"
+              asp-action="Logout"
+              method="post"
+              class="logout-form"
+              onsubmit="return confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống LỬA MỘC?');">
+
             @Html.AntiForgeryToken()
+
             <button type="submit" class="btn-logout">
-                Đăng xuất
+                <span>Đăng xuất</span>
             </button>
         </form>
-
-        <button id="toggleSidebar" class="btn-collapse">
-            Thu gọn
-        </button>
     </div>
 </aside>

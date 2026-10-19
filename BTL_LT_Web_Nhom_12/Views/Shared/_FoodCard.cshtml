@@ -1,0 +1,40 @@
+﻿@model BTL_LT_Web_Nhom_12.Models.Menu.Food
+
+<div class="food-card">
+
+    <a asp-area=""
+       asp-controller="Menu"
+       asp-action="Details"
+       asp-route-id="@Model.FoodId">
+
+        <img src="@Model.ImageUrl"
+             alt="@Model.Name"
+             loading="lazy" />
+    </a>
+
+    <div class="food-card-body">
+
+        <h3>@Model.Name</h3>
+
+        <p>
+            @(string.IsNullOrWhiteSpace(Model.Description)
+                ? "Món ngon được chuẩn bị tại LỬA MỘC."
+                : Model.Description)
+        </p>
+
+        <div class="mt-auto">
+            <div class="food-price mb-3">
+                @Model.Price.ToString("N0")đ
+            </div>
+
+            <a class="btn btn-brand w-100"
+               asp-area=""
+               asp-controller="Menu"
+               asp-action="Details"
+               asp-route-id="@Model.FoodId">
+                Xem chi tiết
+            </a>
+        </div>
+
+    </div>
+</div>

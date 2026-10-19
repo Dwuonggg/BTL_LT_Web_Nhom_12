@@ -1,0 +1,174 @@
+﻿
+@model BTL_LT_Web_Nhom_12.Models.Order.Order
+
+@{
+    ViewData["Title"] = "Thanh toán QR";
+
+    bool canPay = ViewBag.CanPay == true;
+    string? qrBase64 = ViewBag.QrBase64 as string;
+}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="cart-summary text-center">
+
+                <span class="eyebrow dark">
+                    LỬA MỘC DELIVERY
+                </span>
+
+                <h1 class="mt-3">Thanh toán QR</h1>
+
+                <p class="text-muted">
+                    Mã đơn hàng: <strong>#@Model.OrderId</strong>
+                </p>
+
+                <h2 class="fw-bold text-danger">
+                    @Model.TotalAmount.ToString("N0") đ
+                </h2>
+                @if (canPay)
+                    {
+                        <p class="mt-3">
+                            Thời gian thanh toán còn lại:
+                            <strong id="paymentCountdown"
+                                    class="text-danger">
+                                Đang tính...
+                            </strong>
+                        </p>
+                    }
+                @if (TempData["DemoPaymentError"] != null)
+                {
+                    <div class="alert alert-danger">
+                        @TempData["DemoPaymentError"]
+                    </div>
+                }
+
+                @if (canPay && !string.IsNullOrEmpty(qrBase64))
+                {
+                    <div class="my-4">
+                        <img src="data:image/png;base64,@qrBase64"
+                             alt="QR mô phỏng LỬA MỘC"
+                             class="img-fluid border rounded-3 p-3 bg-white"
+                             style="max-width:300px;" />
+                    </div>
+
+                    <div class="cart-summary-row">
+                        <span>Mã đơn</span>
+                        <strong>#@Model.OrderId</strong>
+                    </div>
+                    
+                    <div class="cart-summary-row">
+                        <span>Trạng thái</span>
+                        <strong>Chờ thanh toán</strong>
+                    </div>
+
+                    <hr />
+
+                    <form asp-area=""
+                          asp-controller="DemoPayment"
+                          asp-action="Confirm"
+                          asp-route-id="@Model.OrderId"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-brand w-100 mt-3"
+                                onclick="return confirm('Xác nhận mô phỏng thanh toán thành công?');">
+                            Mô phỏng thanh toán thành công
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-danger mt-4">
+                        <strong>Đơn hàng đã hết hạn thanh toán!</strong>
+
+                        <p class="mb-0 mt-2">
+                            Thời gian thanh toán tối đa là 10 phút.
+                            Vui lòng tạo đơn hàng mới.
+                        </p>
+                    </div>
+
+                    <a asp-controller="Cart"
+                       asp-action="Index"
+                       class="btn btn-brand mt-3">
+                        Quay lại giỏ hàng
+                    </a>
+                }
+
+                <a asp-area=""
+                   asp-controller="Checkout"
+                   asp-action="PaymentPending"
+                   asp-route-id="@Model.OrderId"
+                   class="btn btn-outline-secondary mt-3">
+                    Quay lại đơn hàng
+                </a>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (canPay)
+{
+    int remainingSeconds = ViewBag.RemainingSeconds is int seconds
+        ? seconds
+        : 0;
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            let remaining = @remainingSeconds;
+            const countdown =
+                document.getElementById("paymentCountdown");
+
+            const timer = setInterval(function () {
+
+                if (remaining <= 0) {
+                    clearInterval(timer);
+
+                    const paymentForm = document.querySelector(
+                        'form[action*="Confirm"]'
+                    );
+
+                    const qrImage = document.querySelector(
+                        'img[alt="QR mô phỏng LỬA MỘC"]'
+                    );
+
+                    if (paymentForm) paymentForm.remove();
+                    if (qrImage) qrImage.remove();
+
+                    if (countdown) {
+                        countdown.textContent = "Đã hết hạn";
+                    }
+
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("_refresh", Date.now());
+
+                    window.location.replace(url.toString());
+                    return;
+                }
+
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+
+                if (countdown) {
+                    countdown.textContent =
+                        String(minutes).padStart(2, "0") +
+                        ":" +
+                        String(seconds).padStart(2, "0");
+                }
+
+                remaining--;
+
+            }, 1000);
+        });
+    </script>
+}
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/cart.css"
+          asp-append-version="true" />
+}

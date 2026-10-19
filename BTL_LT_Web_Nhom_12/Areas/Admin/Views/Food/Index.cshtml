@@ -64,6 +64,7 @@
 
         <thead class="table-light">
             <tr>
+                <th>Mã món</th>
                 <th>Hình ảnh</th>
                 <th>Tên món</th>
                 <th>Danh mục</th>
@@ -79,6 +80,7 @@
                 foreach (var food in Model)
                 {
                     <tr>
+                        <td>@food.FoodId.ToString("D4")</td>
                         <td>
                             @if (!string.IsNullOrEmpty(food.ImageUrl))
                             {

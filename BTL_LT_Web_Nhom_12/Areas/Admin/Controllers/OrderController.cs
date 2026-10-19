@@ -24,9 +24,8 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
             string? status)
         {
             var query = _context.Orders
-                .Include(o => o.Payment)
-                .AsNoTracking()
-                .AsQueryable();
+                .Include(o => o.Payment).AsNoTracking()
+                .Where(o => o.Payment != null && o.Payment.PaymentStatus == "Paid");
 
             // Tìm kiếm theo tên, số điện thoại hoặc mã đơn
             if (!string.IsNullOrWhiteSpace(search))
@@ -78,7 +77,7 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
                     .ThenInclude(d => d.Combo)
                 .Include(o => o.Payment)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(o => o.OrderId == id);
+                .FirstOrDefaultAsync(o => o.OrderId == id && o.Payment != null && o.Payment.PaymentStatus == "Paid");
 
             if (order == null)
             {
@@ -124,8 +123,8 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
 
             string? allowedNextStatus = order.Status switch
             {
+                "Pending" => "Preparing",
                 "Preparing" => "Delivering",
-                "Delivering" => "Delivered",
                 _ => null
             };
 
@@ -139,7 +138,10 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
             }
 
             order.Status = newStatus;
-
+            if (newStatus == "Delivering")
+            {
+                order.DeliveryStartedAt = DateTime.UtcNow;
+            }
             await _context.SaveChangesAsync();
 
             return Json(new

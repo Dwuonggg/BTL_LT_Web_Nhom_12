@@ -294,9 +294,7 @@
                 return String(item.paymentId);
             }
 
-            // ==============================
-            // CẬP NHẬT SỐ THÔNG BÁO CHƯA XEM
-            // ==============================
+            // cập nhật thông báo
             function updateNotificationCount() {
                 const unread = notifications.filter(
                     item => !seenIds.has(notificationId(item))
@@ -310,9 +308,7 @@
                 );
             }
 
-            // ==============================
-            // HIỂN THỊ DANH SÁCH THÔNG BÁO
-            // ==============================
+            //danh sách thông báo
             function renderNotifications() {
 
                 notificationList.replaceChildren();
@@ -400,9 +396,7 @@
                 });
             }
 
-            // ==============================
-            // HIỆN TOAST ĐƠN MỚI
-            // ==============================
+            // đơn mới
             function showOrderToast(item) {
 
                 const toastElement = document.createElement("div");

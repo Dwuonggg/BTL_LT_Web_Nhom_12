@@ -1,0 +1,366 @@
+﻿@model BTL_LT_Web_Nhom_12.ViewModels.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Xác nhận đặt hàng";
+
+    bool isRestaurantOpen =
+        ViewBag.IsRestaurantOpen is bool isOpen && isOpen;
+}
+
+
+<section class="container py-5 cart-page">
+
+    <div class="mb-4">
+        <span class="eyebrow dark">LỬA MỘC DELIVERY</span>
+        <h1>Xác nhận đặt hàng</h1>
+
+        <p class="text-muted">
+            Kiểm tra thông tin nhận hàng trước khi thanh toán.
+        </p>
+        
+        @if (isRestaurantOpen)
+        {
+            <div class="alert alert-success mt-3">
+                <strong>● LỬA MỘC đang mở cửa</strong>
+                <p class="mb-0">
+                    Bạn có thể đặt hàng và tiến hành thanh toán.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning mt-3">
+                <strong>● LỬA MỘC hiện đang đóng cửa</strong>
+                <p class="mb-0">
+                    Nhà hàng hiện không nhận đơn mới.
+                    Vui lòng quay lại trong giờ hoạt động(8:00 - 22:00 từ Thứ 2- Thứ 7)
+                </p>
+            </div>
+        }
+
+    </div>
+
+    <form asp-area=""
+          asp-controller="Checkout"
+          asp-action="PlaceOrder"
+          method="post"
+          id="checkoutForm">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3">
+        </div>
+
+        <div class="row g-4">
+
+            <!-- THÔNG TIN GIAO HÀNG -->
+            <div class="col-lg-7">
+                <div class="cart-summary">
+
+                    <h3>Thông tin giao hàng</h3>
+
+                    <div class="mb-3">
+                        <label asp-for="ReceiverName"
+                               class="form-label">
+                            Họ tên người nhận
+                        </label>
+
+                        <input asp-for="ReceiverName"
+                               class="form-control"
+                               autocomplete="name" />
+
+                        <span asp-validation-for="ReceiverName"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ReceiverPhone"
+                               class="form-label">
+                            Số điện thoại người nhận
+                        </label>
+
+                        <input asp-for="ReceiverPhone"
+                               type="tel"
+                               class="form-control"
+                               autocomplete="tel" />
+
+                        <span asp-validation-for="ReceiverPhone"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DeliveryAddress"
+                               class="form-label">
+                            Địa chỉ giao hàng
+                        </label>
+
+                        <textarea asp-for="DeliveryAddress"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Số nhà, đường, phường/xã, tỉnh/thành phố"></textarea>
+
+                        <span asp-validation-for="DeliveryAddress"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Note"
+                               class="form-label">
+                            Ghi chú đơn hàng
+                        </label>
+
+                        <textarea asp-for="Note"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Ghi chú thêm..."></textarea>
+
+                        <span asp-validation-for="Note"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="alert alert-light border mb-0">
+                        <strong>Phương thức thanh toán</strong>
+
+                        <p class="mb-0 mt-1">
+                            QR mô phỏng trong môi trường Development.
+                            Không có giao dịch ngân hàng thật.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- THÔNG TIN ĐƠN HÀNG -->
+            <div class="col-lg-5">
+                <div class="cart-summary">
+
+                    <h3>Đơn hàng của bạn</h3>
+
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="d-flex justify-content-between
+                                    gap-3 mb-3">
+
+                            <div>
+                                <strong>@item.Name</strong>
+
+                                <div class="text-muted small">
+                                    @item.Quantity ×
+                                    @item.UnitPrice.ToString("N0") đ
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(item.Note))
+                                {
+                                    <div class="text-muted small">
+                                        Ghi chú: @item.Note
+                                    </div>
+                                }
+                            </div>
+
+                            <strong class="text-nowrap">
+                                @item.LineTotal.ToString("N0") đ
+                            </strong>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <!-- NHẬP VOUCHER -->
+                    <div class="mb-3">
+
+                        <label asp-for="VoucherCode"
+                               class="form-label fw-bold">
+                            Mã ưu đãi
+                        </label>
+
+                        <div class="input-group">
+
+                            <input asp-for="VoucherCode"
+                                   id="voucherCode"
+                                   class="form-control"
+                                   placeholder="Nhập mã giảm giá" />
+
+                            <button type="button"
+                                    id="applyVoucher"
+                                    class="btn btn-outline-secondary">
+                                Áp dụng
+                            </button>
+
+                        </div>
+
+                        <span asp-validation-for="VoucherCode"
+                              class="text-danger"></span>
+
+                        <div id="voucherMessage"
+                             class="small mt-2"
+                             role="status">
+                        </div>
+
+                        <div class="text-muted small mt-1">
+                            Mã chỉ được tính là đã sử dụng
+                            khi thanh toán thành công.
+                        </div>
+
+                    </div>
+
+                    <!-- TÍNH TIỀN -->
+                    <div class="cart-summary-row">
+                        <span>Tạm tính</span>
+
+                        <strong>
+                            @Model.Subtotal.ToString("N0") đ
+                        </strong>
+                    </div>
+
+                    <div class="cart-summary-row">
+                        <span>Giảm giá</span>
+
+                        <strong id="discountDisplay">
+                            -@Model.DiscountAmount.ToString("N0") đ
+                        </strong>
+                    </div>
+
+                    <div class="cart-summary-row">
+                        <span>Phí giao hàng</span>
+
+                        <strong>
+                            @Model.DeliveryFee.ToString("N0") đ
+                        </strong>
+                    </div>
+
+                    <hr />
+
+                    <div class="cart-summary-row cart-total">
+
+                        <span>Tổng cộng</span>
+
+                        <strong id="totalDisplay">
+                            @Model.TotalAmount.ToString("N0") đ
+                        </strong>
+
+                    </div>
+
+                    @if (isRestaurantOpen)
+                    {
+                        <button type="submit"
+                                class="btn btn-brand w-100 mt-3">
+                            Tiến hành thanh toán
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="btn btn-secondary w-100 mt-3"
+                                disabled>
+                            Hiện ngoài giờ hoạt động
+                        </button>
+                    }
+
+                    <a asp-area=""
+                       asp-controller="Cart"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary w-100 mt-2">
+                        Quay lại giỏ hàng
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</section>
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/cart.css"
+          asp-append-version="true" />
+}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const codeInput = document.getElementById("voucherCode");
+    const applyButton = document.getElementById("applyVoucher");
+    const message = document.getElementById("voucherMessage");
+    const discountDisplay = document.getElementById("discountDisplay");
+    const totalDisplay = document.getElementById("totalDisplay");
+
+    const tokenInput = document.querySelector(
+        '#checkoutForm input[name="__RequestVerificationToken"]'
+    );
+
+    const subtotal =
+        @Model.Subtotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    const deliveryFee =
+        @Model.DeliveryFee.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    const previewUrl =
+        '@Url.Action("PreviewVoucher", "Checkout", new { area = "" })';
+
+    function money(value) {
+        return Number(value).toLocaleString("vi-VN") + " đ";
+    }
+
+    function resetPreview() {
+        discountDisplay.textContent = "-0 đ";
+        totalDisplay.textContent = money(subtotal + deliveryFee);
+
+        message.textContent = "";
+        message.className = "small mt-2";
+    }
+
+    // Sửa mã thì xóa phần giảm giá cũ
+    codeInput.addEventListener("input", resetPreview);
+
+    applyButton.addEventListener("click", async function () {
+
+        applyButton.disabled = true;
+
+        message.textContent = "Đang kiểm tra mã...";
+        message.className = "small mt-2 text-muted";
+
+        const body = new URLSearchParams();
+
+        body.append("voucherCode", codeInput.value);
+        body.append("__RequestVerificationToken", tokenInput.value);
+
+        try {
+            const response = await fetch(previewUrl, {
+                method: "POST",
+                body: body
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Không thể áp dụng mã."
+                );
+            }
+
+            discountDisplay.textContent =
+                "-" + money(result.discountAmount);
+
+            totalDisplay.textContent =
+                money(result.totalAmount);
+
+            message.textContent = result.message;
+            message.className = "small mt-2 text-success";
+
+        } catch (error) {
+
+            resetPreview();
+
+            message.textContent =
+                error.message || "Lỗi khi kiểm tra mã.";
+
+            message.className = "small mt-2 text-danger";
+
+        } finally {
+            applyButton.disabled = false;
+        }
+    });
+});
+</script>

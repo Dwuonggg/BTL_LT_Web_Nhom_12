@@ -27,7 +27,6 @@ body {
 	justify-content: space-between;
 	padding: 20px 0;
 	flex-shrink: 0;
-	/* Cố định Sidebar không bị trôi khi cuộn nội dung trang */
 	position: sticky;
 	top: 0;
 	height: 100vh;
@@ -35,7 +34,7 @@ body {
 	z-index: 1000;
 }
 
-/* Brand / Logo */
+/* LOGO */
 .sidebar-brand {
 	padding: 0 20px 20px;
 	border-bottom: 1px solid #2e2b2b;
@@ -57,7 +56,7 @@ body {
 	margin-top: 2px;
 }
 
-/* Navigation Menu (Không Icon) */
+/* MENU */
 .sidebar-menu {
 	display: flex;
 	flex-direction: column;
@@ -87,7 +86,7 @@ body {
 			font-weight: 600;
 		}
 
-/* Sidebar Footer */
+/* FOOTER */
 .sidebar-footer {
 	padding: 15px 20px 0;
 	border-top: 1px solid #2e2b2b;
@@ -141,18 +140,16 @@ body {
 		color: #ffffff;
 	}
 
-/* ==========================================
-   3. MAIN CONTENT AREA & HEADER
-   ========================================== */
+/* MAIN CONTENT */
 .admin-main {
 	flex: 1;
-	min-width: 0; /* Khắc phục lỗi vỡ layout Flexbox do Chart.js */
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
 }
 
-/* Top Header */
+/* HEADER */
 .admin-header {
 	background-color: #ffffff;
 	padding: 15px 30px;
@@ -212,15 +209,13 @@ body {
 		font-weight: bold;
 	}
 
-/* Main Body Content */
+/* CONTENT */
 .admin-content {
 	padding: 25px 30px;
 	flex-grow: 1;
 }
 
-/* ==========================================
-   4. DASHBOARD COMPONENTS & CARDS
-   ========================================== */
+/* DASHBOARD */
 .stat-card {
 	background: #ffffff;
 	border-radius: 12px;
@@ -259,7 +254,6 @@ body {
 	color: #888888;
 }
 
-/* Chart Container */
 .chart-card {
 	background: #ffffff;
 	border-radius: 12px;
@@ -275,9 +269,7 @@ body {
 	display: inline-block;
 }
 
-/* ==========================================
-   5. TABLES & GENERAL UI ELEMENTS
-   ========================================== */
+/* TABLES */
 .card {
 	background-color: #ffffff;
 }
@@ -302,7 +294,7 @@ body {
 	border-radius: 6px;
 }
 
-/* Custom Primary Button Color */
+/* BUTTONS */
 .btn-danger {
 	background-color: #bd4b32;
 	border-color: #bd4b32;
@@ -311,4 +303,37 @@ body {
 	.btn-danger:hover {
 		background-color: #a33f2a;
 		border-color: #a33f2a;
+	}
+
+/* ĐĂNG XUẤT */
+.logout-form {
+	width: 100%;
+	margin-top: 15px;
+}
+
+.btn-logout {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 100%;
+	padding: 12px 16px;
+	background-color: #fff1f0;
+	color: #c0392b;
+	border: 1px solid #f0c5c0;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+	.btn-logout:hover {
+		background-color: #c0392b;
+		color: white;
+		border-color: #c0392b;
+	}
+
+	.btn-logout:active {
+		transform: scale(0.98);
 	}

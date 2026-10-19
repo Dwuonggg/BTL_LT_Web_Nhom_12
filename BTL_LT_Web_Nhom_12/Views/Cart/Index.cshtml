@@ -1,0 +1,363 @@
+﻿
+@model BTL_LT_Web_Nhom_12.ViewModels.CartViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<section class="container py-5 cart-page">
+
+    <div class="mb-4">
+        <span class="eyebrow dark">ĐƠN HÀNG CỦA BẠN</span>
+
+        <h1>Giỏ hàng</h1>
+
+        <p class="text-muted">
+            Kiểm tra món ăn và số lượng trước khi đặt hàng.
+        </p>
+    </div>
+
+    @if (TempData["CartMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["CartMessage"]
+        </div>
+    }
+
+    @if (TempData["CartError"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["CartError"]
+        </div>
+    }
+
+    @if (!Model.Items.Any())
+    {
+        <div class="cart-empty text-center py-5">
+
+            <h3>Giỏ hàng đang trống</h3>
+
+            <p class="text-muted">
+                Hãy chọn những món nướng yêu thích của bạn.
+            </p>
+
+            <a asp-area=""
+               asp-controller="Menu"
+               asp-action="Index"
+               class="btn btn-brand mt-3">
+                Khám phá thực đơn
+            </a>
+
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            <!-- DANH SÁCH SẢN PHẨM -->
+            <div class="col-lg-8">
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="cart-item"
+                         data-price="@item.UnitPrice.ToString(CultureInfo.InvariantCulture)">
+
+                        <!-- Ảnh sản phẩm -->
+                        <div class="cart-item-image">
+
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl"
+                                     alt="@item.Name" />
+                            }
+                            else
+                            {
+                                <div class="cart-no-image">
+                                    LỬA MỘC
+                                </div>
+                            }
+
+                        </div>
+
+                        <!-- Thông tin sản phẩm -->
+                        <div class="cart-item-info">
+
+                            <span class="cart-item-type">
+                                @(item.Type == "Combo" ? "COMBO" : "MÓN ĂN")
+                            </span>
+
+                            <h3>@item.Name</h3>
+
+                            <!-- Ghi chú -->
+                            @if (!string.IsNullOrWhiteSpace(item.Note))
+                            {
+                                <p class="text-muted small mb-2">
+                                    <strong>Ghi chú:</strong> @item.Note
+                                </p>
+                            }
+
+                            <!-- Đơn giá -->
+                            <p class="cart-price">
+                                @item.UnitPrice.ToString("N0") đ
+                            </p>
+
+                            <!-- SỐ LƯỢNG: TỰ ĐỘNG CẬP NHẬT -->
+                            <form asp-area=""
+                                  asp-controller="Cart"
+                                  asp-action="Update"
+                                  method="post"
+                                  class="cart-quantity-form">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="type"
+                                       value="@item.Type" />
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@item.ProductId" />
+
+                                <label for="qty-@item.Type-@item.ProductId">
+                                    Số lượng
+                                </label>
+
+                                <input id="qty-@item.Type-@item.ProductId"
+                                       type="number"
+                                       name="quantity"
+                                       value="@item.Quantity"
+                                       min="1"
+                                       max="50"
+                                       step="1"
+                                       class="form-control cart-quantity-input" />
+
+                            </form>
+
+                            <!-- Thành tiền và xóa -->
+                            <div class="cart-item-bottom">
+
+                                <strong class="cart-line-total">
+                                    @item.LineTotal.ToString("N0") đ
+                                </strong>
+
+                                <form asp-area=""
+                                      asp-controller="Cart"
+                                      asp-action="Remove"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="type"
+                                           value="@item.Type" />
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@item.ProductId" />
+
+                                    <button type="submit"
+                                            class="cart-remove">
+                                        Xóa sản phẩm
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+                    </div>
+                }
+
+                <a asp-area=""
+                   asp-controller="Menu"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary mt-3">
+                    Tiếp tục chọn món
+                </a>
+
+            </div>
+
+            <!-- TÓM TẮT GIỎ HÀNG -->
+            <div class="col-lg-4">
+
+                <div class="cart-summary">
+
+                    <h3>Tóm tắt đơn hàng</h3>
+
+                    <div class="cart-summary-row">
+                        <span>Số lượng</span>
+
+                        <strong id="cart-total-quantity">
+                            @Model.TotalQuantity sản phẩm
+                        </strong>
+                    </div>
+
+                    <div class="cart-summary-row">
+                        <span>Tạm tính</span>
+
+                        <strong class="cart-subtotal">
+                            @Model.Subtotal.ToString("N0") đ
+                        </strong>
+                    </div>
+
+                    <hr />
+
+                    <div class="cart-summary-row cart-total">
+                        <span>Tổng tạm tính</span>
+
+                        <strong class="cart-subtotal">
+                            @Model.Subtotal.ToString("N0") đ
+                        </strong>
+                    </div>
+
+                    <p class="text-muted small">
+                        Phí giao hàng và ưu đãi sẽ được tính
+                        khi xác nhận đơn hàng.
+                    </p>
+
+                    <a asp-area=""
+                       asp-controller="Checkout"
+                       asp-action="Index"
+                       class="btn btn-brand w-100">
+                        Tiến hành đặt hàng
+                    </a>
+
+                    <p class="text-muted small text-center mt-2 mb-0">
+                        Chức năng Checkout sẽ được kết nối
+                        ở bước tiếp theo.
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+    }
+
+</section>
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/cart.css"
+          asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const quantityInputs =
+                document.querySelectorAll(".cart-quantity-input");
+
+            const totalQuantityElement =
+                document.getElementById("cart-total-quantity");
+
+            const subtotalElements =
+                document.querySelectorAll(".cart-subtotal");
+
+            function formatMoney(amount) {
+                return new Intl.NumberFormat("vi-VN", {
+                    maximumFractionDigits: 0
+                }).format(amount) + " đ";
+            }
+
+            // Cập nhật tiền trên giao diện ngay lập tức
+            function updateCartTotals() {
+
+                let subtotal = 0;
+                let totalQuantity = 0;
+
+                document.querySelectorAll(".cart-item")
+                    .forEach(function (cartItem) {
+
+                        const price =
+                            Number(cartItem.dataset.price);
+
+                        const input =
+                            cartItem.querySelector(".cart-quantity-input");
+
+                        const lineTotalElement =
+                            cartItem.querySelector(".cart-line-total");
+
+                        if (!input || !lineTotalElement) {
+                            return;
+                        }
+
+                        const quantity = Number(input.value);
+
+                        if (
+                            !Number.isInteger(quantity) ||
+                            quantity < 1 ||
+                            quantity > 50
+                        ) {
+                            return;
+                        }
+
+                        const lineTotal = price * quantity;
+
+                        lineTotalElement.textContent =
+                            formatMoney(lineTotal);
+
+                        subtotal += lineTotal;
+                        totalQuantity += quantity;
+                    });
+
+                if (totalQuantityElement) {
+                    totalQuantityElement.textContent =
+                        totalQuantity + " sản phẩm";
+                }
+
+                subtotalElements.forEach(function (element) {
+                    element.textContent = formatMoney(subtotal);
+                });
+            }
+
+            // Tự lưu số lượng sau khi người dùng thay đổi
+            quantityInputs.forEach(function (input) {
+
+                let timer;
+
+                function scheduleUpdate() {
+
+                    clearTimeout(timer);
+
+                    const quantity = Number(input.value);
+
+                    if (
+                        !Number.isInteger(quantity) ||
+                        quantity < 1 ||
+                        quantity > 50
+                    ) {
+                        return;
+                    }
+
+                    updateCartTotals();
+
+                    timer = setTimeout(function () {
+                        input.form.requestSubmit();
+                    }, 500);
+                }
+
+                input.addEventListener("input", scheduleUpdate);
+
+                input.addEventListener("change", function () {
+
+                    const quantity = Number(input.value);
+
+                    if (!Number.isInteger(quantity)) {
+                        input.value = 1;
+                    } else {
+                        input.value = Math.max(
+                            1,
+                            Math.min(50, quantity)
+                        );
+                    }
+
+                    scheduleUpdate();
+                });
+
+            });
+
+        });
+    </script>
+}

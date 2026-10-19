@@ -94,6 +94,40 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Account.PasswordResetOtp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("PasswordResetOtps");
+                });
+
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Menu.Category", b =>
                 {
                     b.Property<int>("CategoryId")
@@ -244,6 +278,9 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.Property<decimal>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("DeliveryStartedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -278,9 +315,14 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("VoucherId")
+                        .HasColumnType("int");
+
                     b.HasKey("OrderId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("VoucherId");
 
                     b.ToTable("Orders");
                 });
@@ -513,6 +555,15 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                     b.ToTable("VoucherUsages");
                 });
 
+            modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Account.PasswordResetOtp", b =>
+                {
+                    b.HasOne("BTL_LT_Web_Nhom_12.Models.Account.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("BTL_LT_Web_Nhom_12.Models.Menu.ComboDetail", b =>
                 {
                     b.HasOne("BTL_LT_Web_Nhom_12.Models.Menu.Combo", "Combo")
@@ -550,6 +601,12 @@ namespace BTL_LT_Web_Nhom_12.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("BTL_LT_Web_Nhom_12.Models.Voucher.Voucher", "AppliedVoucher")
+                        .WithMany()
+                        .HasForeignKey("VoucherId");
+
+                    b.Navigation("AppliedVoucher");
 
                     b.Navigation("Customer");
                 });

@@ -1,0 +1,166 @@
+﻿
+@model List<BTL_LT_Web_Nhom_12.Models.Voucher.Voucher>
+
+@{
+    ViewData["Title"] = "Ưu đãi LỬA MỘC";
+}
+
+<section class="container py-5">
+
+    <div class="text-center mb-5">
+        <span class="eyebrow dark">
+            LỬA MỘC DELIVERY
+        </span>
+
+        <h1 class="mt-3 fw-bold">
+            Ưu đãi dành cho bạn
+        </h1>
+
+        <p class="text-muted">
+            Khám phá những mã giảm giá hấp dẫn
+            dành cho đơn hàng của bạn.
+        </p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center bg-white border
+                    rounded-4 p-5">
+
+            <h4>Hiện chưa có ưu đãi</h4>
+
+            <p class="text-muted">
+                Các chương trình khuyến mãi mới
+                sẽ được cập nhật tại đây.
+            </p>
+
+            <a asp-controller="Menu"
+               asp-action="Index"
+               class="btn btn-brand">
+                Xem thực đơn
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            @foreach (var voucher in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card border-0 shadow-sm
+                                rounded-4 h-100">
+
+                        <div class="card-body p-4
+                                    d-flex flex-column">
+
+                            <span class="text-danger
+                                         fw-bold small mb-2">
+                                ƯU ĐÃI LỬA MỘC
+                            </span>
+
+                            <h4 class="fw-bold">
+                                @voucher.Title
+                            </h4>
+
+                            <div class="my-3">
+                                <span class="display-5
+                                             fw-bold text-danger">
+                                    @voucher.DiscountPercent.ToString("0.##")%
+                                </span>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(
+                                voucher.Description))
+                            {
+                                <p class="text-muted">
+                                    @voucher.Description
+                                </p>
+                            }
+
+                            <div class="mb-2">
+                                <strong>Đơn tối thiểu:</strong>
+                                @voucher.MinOrderAmount.ToString("N0") đ
+                            </div>
+
+                            <div class="mb-2">
+                                <strong>Giảm tối đa:</strong>
+                                @voucher.MaxDiscountAmount.ToString("N0") đ
+                            </div>
+
+                            <div class="mb-3">
+                                <strong>Hết hạn:</strong>
+                                @voucher.EndDate.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+
+                            <div class="mt-auto">
+
+                                <div class="border border-danger
+                                            rounded-3 text-center
+                                            py-3 mb-3">
+
+                                    <span class="text-muted small">
+                                        Mã ưu đãi
+                                    </span>
+
+                                    <h5 class="fw-bold
+                                               text-danger mb-0">
+                                        @voucher.Code
+                                    </h5>
+                                </div>
+
+                                <button type="button"
+                                        class="btn btn-outline-brand
+                                               w-100 copy-voucher"
+                                        data-code="@voucher.Code">
+                                    Sao chép mã
+                                </button>
+
+                                <a asp-controller="Cart"
+                                   asp-action="Index"
+                                   class="btn btn-brand w-100 mt-2">
+                                    Đến giỏ hàng
+                                </a>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".copy-voucher")
+            .forEach(function (button) {
+
+                button.addEventListener("click", async function () {
+
+                    const code = button.dataset.code;
+
+                    try {
+                        await navigator.clipboard.writeText(code);
+
+                        button.textContent = "Đã sao chép!";
+
+                        setTimeout(function () {
+                            button.textContent = "Sao chép mã";
+                        }, 2000);
+                    }
+                    catch {
+                        window.prompt(
+                            "Sao chép mã ưu đãi:",
+                            code
+                        );
+                    }
+                });
+            });
+    });
+</script>

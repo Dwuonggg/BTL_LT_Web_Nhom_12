@@ -1,0 +1,127 @@
+﻿
+@model IEnumerable<BTL_LT_Web_Nhom_12.Models.Menu.Food>
+@using BTL_LT_Web_Nhom_12.Models.Menu
+
+@{
+    ViewData["Title"] = "Thực đơn";
+
+    var categories = ViewBag.Categories as List<Category>
+                     ?? new List<Category>();
+
+    int? selectedCategory = ViewBag.CategoryId as int?;
+    string search = ViewBag.Search as string ?? "";
+}
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow dark">
+            NGON TỪ BẾP • GIAO TẬN NHÀ
+        </span>
+
+        <h1>Thực đơn LỬA MỘC</h1>
+
+        <p>
+            Chọn món yêu thích, chúng tôi chuẩn bị
+            nóng hổi và giao đến bạn.
+        </p>
+    </div>
+</section>
+
+<section class="section container">
+
+    <!-- Tìm kiếm và bộ lọc -->
+    <div class="menu-toolbar">
+
+        <input id="menu-search"
+               class="form-control"
+               type="search"
+               value="@search"
+               placeholder="Tìm theo tên món..."
+               aria-label="Tìm món ăn" />
+
+        <select id="menu-category" class="form-select">
+            <option value="">Tất cả danh mục</option>
+
+            @foreach (var category in categories)
+            {
+                <option value="@category.CategoryId"
+                        selected="@(selectedCategory == category.CategoryId)">
+                    @category.Name
+                </option>
+            }
+        </select>
+
+        <select id="menu-sort" class="form-select">
+            <option value="featured">Món nổi bật</option>
+            <option value="asc">Giá tăng dần</option>
+            <option value="desc">Giá giảm dần</option>
+        </select>
+
+    </div>
+
+    <!-- Lọc khoảng giá -->
+    <div class="price-filter">
+
+        <label>
+            Giá từ
+            <input id="price-min"
+                   type="number"
+                   min="0"
+                   placeholder="0" />
+        </label>
+
+        <label>
+            Đến
+            <input id="price-max"
+                   type="number"
+                   min="0"
+                   placeholder="Không giới hạn" />
+        </label>
+
+        <button id="clear-filters"
+                type="button"
+                class="btn btn-sm btn-outline-brand">
+            Xóa bộ lọc
+        </button>
+
+    </div>
+
+    <!-- Số lượng kết quả -->
+    <div class="results-line">
+        <span id="result-count">@Model.Count() món ăn</span>
+    </div>
+
+    <!-- Danh sách món -->
+    <div id="menu-grid" class="row g-4">
+
+        @foreach (var food in Model)
+        {
+            <div class="col-12 col-sm-6 col-lg-4 menu-item"
+                 data-name="@food.Name.ToLowerInvariant()"
+                 data-category="@food.CategoryId"
+                 data-price="@food.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                 data-featured="@food.IsFeatured.ToString().ToLowerInvariant()">
+
+                <partial name="_FoodCard" model="food" />
+
+            </div>
+        }
+
+    </div>
+
+    <!-- Không có kết quả -->
+    <div id="menu-empty" class="empty-state" hidden>
+        <h3>Chưa tìm thấy món phù hợp</h3>
+        <p>Hãy thử từ khóa hoặc bộ lọc khác.</p>
+    </div>
+
+    <!-- Phân trang -->
+    <nav class="pagination-wrap">
+        <ul id="menu-pagination" class="pagination"></ul>
+    </nav>
+
+</section>
+
+@section Scripts {
+    <script src="~/js/menu.js" asp-append-version="true"></script>
+}
