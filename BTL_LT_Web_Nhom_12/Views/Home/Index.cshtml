@@ -5,37 +5,108 @@
     ViewData["Title"] = "Trang chủ";
 }
 
-<!-- Banner chính -->
-<section class="hero-banner">
-    <div class="hero-shade"></div>
+<!-- Banner Slider -->
+@if (Model.Banners != null && Model.Banners.Any())
+{
+    <div id="homeBannerCarousel"
+         class="carousel slide"
+         data-bs-ride="carousel"
+         data-bs-interval="5000">
 
-    <div class="container hero-content">
+        @if (Model.Banners.Count > 1)
+        {
+            <div class="carousel-indicators">
+                @for (int i = 0; i < Model.Banners.Count; i++)
+                {
+                    <button type="button"
+                            data-bs-target="#homeBannerCarousel"
+                            data-bs-slide-to="@i"
+                            class="@(i == 0 ? "active" : "")"
+                            aria-current="@(i == 0 ? "true" : "false")"
+                            aria-label="Banner @(i + 1)">
+                    </button>
+                }
+            </div>
+        }
 
-        <span class="eyebrow">
-            BBQ • MÓN NƯỚNG • COMBO
-        </span>
+        <div class="carousel-inner">
+            @for (int i = 0; i < Model.Banners.Count; i++)
+            {
+                var banner = Model.Banners[i];
 
-        <h1>
-            Đậm vị nướng
-            <br />
-            <em>Nóng hổi tận nhà</em>
-        </h1>
+                <div class="carousel-item @(i == 0 ? "active" : "")"
+                     data-bs-interval="5000">
 
-        <p>
-            Sườn nướng BBQ và những món ngon được
-            chuẩn bị chỉn chu, giao đến tận cửa nhà bạn.
-        </p>
+                    <section class="hero-banner"
+                             style="background-image: url('@Url.Content(banner.ImageUrl)'); background-size: cover; background-position: center;">
 
-        <a class="btn btn-brand btn-lg"
-           asp-area=""
-           asp-controller="Menu"
-           asp-action="Index">
-            Đặt món ngay
-        </a>
+                        <div class="hero-shade"></div>
 
+                        <div class="container hero-content">
+                            <span class="eyebrow">
+                                BBQ • MÓN NƯỚNG • COMBO
+                            </span>
+
+                            <h1>
+                                Đậm vị nướng
+                                <br />
+                                <em>Nóng hổi tận nhà</em>
+                            </h1>
+
+                            <p>
+                                Sườn nướng BBQ và những món ngon
+                                được giao tận cửa nhà bạn.
+                            </p>
+
+                            <a class="btn btn-brand btn-lg"
+                               asp-area=""
+                               asp-controller="Menu"
+                               asp-action="Index">
+                                Đặt món ngay
+                            </a>
+                        </div>
+
+                    </section>
+                </div>
+            }
+        </div>
+
+        @if (Model.Banners.Count > 1)
+        {
+            <button class="carousel-control-prev"
+                    type="button"
+                    data-bs-target="#homeBannerCarousel"
+                    data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"
+                      aria-hidden="true"></span>
+                <span class="visually-hidden">Trước</span>
+            </button>
+
+            <button class="carousel-control-next"
+                    type="button"
+                    data-bs-target="#homeBannerCarousel"
+                    data-bs-slide="next">
+                <span class="carousel-control-next-icon"
+                      aria-hidden="true"></span>
+                <span class="visually-hidden">Sau</span>
+            </button>
+        }
     </div>
-</section>
-
+}
+else
+{
+    <section class="hero-banner">
+        <div class="hero-shade"></div>
+        <div class="container hero-content">
+            <h1>Đậm vị nướng – Nóng hổi tận nhà</h1>
+            <a class="btn btn-brand"
+               asp-controller="Menu"
+               asp-action="Index">
+                Đặt món ngay
+            </a>
+        </div>
+    </section>
+}
 <!-- Món ăn nổi bật -->
 <section class="section container">
 
