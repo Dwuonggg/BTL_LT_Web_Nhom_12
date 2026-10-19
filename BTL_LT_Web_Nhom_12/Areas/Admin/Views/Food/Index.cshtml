@@ -141,21 +141,11 @@
                                 Sửa
                             </button>
 
-                            <form asp-area="Admin"
-                                  asp-controller="Food"
-                                  asp-action="Delete"
-                                  method="post"
-                                  class="d-inline"
-                                  onsubmit="return confirm('Bạn có chắc muốn xóa món ăn này?');">
-
-                                @Html.AntiForgeryToken()
-
-                                <input type="hidden" name="id" value="@food.FoodId" />
-
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    Xóa
-                                </button>
-                            </form>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger btn-delete-food"
+                                    data-id="@food.FoodId">
+                                Xóa
+                            </button>
                         </td>
                     </tr>
                 }
@@ -163,7 +153,7 @@
             else
             {
                 <tr>
-                    <td colspan="6"
+                    <td colspan="7"
                         class="text-center text-muted py-4">
                         Chưa có món ăn nào trong Database.
                     </td>
@@ -224,7 +214,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
-            <form asp-area="Admin"
+            <form id="addFoodForm" asp-area="Admin"
                   asp-controller="Food"
                   asp-action="Create"
                   method="post"
@@ -597,6 +587,94 @@
             }
         });
 
+
+        // Thêm món bằng AJAX (MVC POST để giữ tính năng upload).
+        const addForm = document.getElementById("addFoodForm");
+        addForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            if (!addForm.reportValidity()) return;
+            const submit = addForm.querySelector('button[type="submit"]');
+            submit.disabled = true;
+            try {
+                const response = await fetch(addForm.action, {
+                    method: "POST",
+                    body: new FormData(addForm),
+                    credentials: "same-origin",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success)
+                    throw new Error(result.message || "Không thể thêm món.");
+                bootstrap.Modal.getInstance(document.getElementById("addFoodModal"))?.hide();
+                addForm.reset();
+                await loadFoods(1);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                submit.disabled = false;
+            }
+        });
+
+        // PUT multipart/form-data: FormData chứa cả ảnh và antiforgery token.
+        const editForm = document.getElementById("editFoodForm");
+        editForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            if (!editForm.reportValidity()) return;
+            const id = document.getElementById("editFoodId").value;
+            const submit = editForm.querySelector('button[type="submit"]');
+            const formData = new FormData(editForm);
+            // Nếu không tích checkbox, gửi rõ false.
+            formData.set("isFeatured", document.getElementById("editFoodFeatured").checked.toString());
+            submit.disabled = true;
+            try {
+                const response = await fetch(`/Admin/Food/${encodeURIComponent(id)}`, {
+                    method: "PUT",
+                    credentials: "same-origin",
+                    body: formData
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success)
+                    throw new Error(result.message || "Không thể sửa món.");
+                bootstrap.Modal.getInstance(document.getElementById("editFoodModal"))?.hide();
+                await loadFoods(1);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                submit.disabled = false;
+            }
+        });
+
+        // DELETE có xác nhận; event delegation hoạt động sau khi lọc/phân trang.
+        tableBody.addEventListener("click", async (event) => {
+            const button = event.target.closest(".btn-delete-food");
+            if (!button) return;
+            const id = button.dataset.id;
+            if (!confirm(`Bạn có chắc muốn xóa món #${id}?`)) return;
+
+            const csrfToken = document.querySelector(
+                '#addFoodForm input[name="__RequestVerificationToken"]'
+            )?.value;
+            if (!csrfToken) {
+                alert("Thiếu Anti-forgery Token. Hãy tải lại trang.");
+                return;
+            }
+            button.disabled = true;
+            try {
+                const response = await fetch(`/Admin/Food/${encodeURIComponent(id)}`, {
+                    method: "DELETE",
+                    credentials: "same-origin",
+                    headers: { "RequestVerificationToken": csrfToken }
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success)
+                    throw new Error(result.message || "Không thể xóa món.");
+                await loadFoods(1);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
     });
 </script>
 

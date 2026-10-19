@@ -102,14 +102,19 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
             string? description,
             IFormFile? imageFile)
         {
+            IActionResult CreateError(string message)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return BadRequest(new { success = false, message });
+
+                TempData["Error"] = message;
+                return RedirectToAction(nameof(Index));
+            }
             if (string.IsNullOrWhiteSpace(name) ||
                 name.Trim().Length > 150 ||
                 price <= 0)
             {
-                TempData["Error"] =
-                    "Tên món hoặc giá bán không hợp lệ.";
-
-                return RedirectToAction(nameof(Index));
+                return CreateError("Tên món hoặc giá bán không hợp lệ.");
             }
 
             bool categoryExists = await _context.Categories
@@ -119,15 +124,13 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
 
             if (!categoryExists)
             {
-                TempData["Error"] =
-                    "Danh mục không tồn tại hoặc đã ngừng hoạt động.";
-
-                return RedirectToAction(nameof(Index));
+                return CreateError("Danh mục không tồn tại hoặc đã ngừng hoạt động.");
             }
 
             if (!ValidateImage(imageFile))
             {
-                return RedirectToAction(nameof(Index));
+                return CreateError(
+                    TempData["Error"]?.ToString() ?? "Ảnh không hợp lệ.");
             }
 
             string? imageUrl = null;
@@ -151,8 +154,17 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
             _context.Foods.Add(food);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Thêm món ăn thành công!";
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new
+                {
+                    success = true,
+                    message = "Thêm món ăn thành công!",
+                    foodId = food.FoodId
+                });
+            }
 
+            TempData["Success"] = "Thêm món ăn thành công!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -299,6 +311,86 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+        // AJAX PUT: giữ upload ảnh, trạng thái và món nổi bật.
+        [HttpPut("/Admin/Food/{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateAjax(
+            int id, [FromForm] int categoryId, [FromForm] string name,
+            [FromForm] decimal price, [FromForm] string? description,
+            [FromForm] string status, [FromForm] bool isFeatured,
+            [FromForm] IFormFile? imageFile)
+        {
+            var food = await _context.Foods.FindAsync(id);
+            if (food == null)
+                return NotFound(new { success = false, message = "Không tìm thấy món ăn." });
+
+            if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 150 || price <= 0)
+                return BadRequest(new { success = false, message = "Tên món hoặc giá bán không hợp lệ." });
+
+            if (!await _context.Categories.AnyAsync(c => c.CategoryId == categoryId && c.IsActive))
+                return BadRequest(new { success = false, message = "Danh mục không hoạt động hoặc không tồn tại." });
+
+            if (status != "Available" && status != "Unavailable")
+                return BadRequest(new { success = false, message = "Trạng thái không hợp lệ." });
+
+            if (!ValidateImage(imageFile))
+                return BadRequest(new
+                {
+                    success = false,
+                    message = TempData["Error"]?.ToString() ?? "Ảnh không hợp lệ."
+                });
+
+            if (imageFile != null)
+                food.ImageUrl = await SaveImageAsync(imageFile);
+
+            food.CategoryId = categoryId;
+            food.Name = name.Trim();
+            food.Description = description?.Trim();
+            food.Price = price;
+            food.Status = status;
+            food.IsFeatured = isFeatured;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Cập nhật món thành công.", foodId = food.FoodId });
+        }
+
+        // AJAX DELETE: ngăn xóa món đã xuất hiện trong đơn hoặc combo.
+        [HttpDelete("/Admin/Food/{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAjax(int id)
+        {
+            var food = await _context.Foods.FindAsync(id);
+            if (food == null)
+                return NotFound(new { success = false, message = "Không tìm thấy món ăn." });
+
+            var inCombo = await _context.ComboDetails.AnyAsync(cd => cd.FoodId == id);
+            var inOrder = await _context.OrderDetails.AnyAsync(od => od.FoodId == id);
+            if (inCombo || inOrder)
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Món đã được dùng trong combo hoặc đơn hàng. Hãy chuyển sang Ngừng bán."
+                });
+
+            _context.Foods.Remove(food);
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { success = true, message = "Xóa món thành công." });
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Không thể xóa món do có dữ liệu liên quan. Hãy chuyển sang Ngừng bán."
+                });
+            }
+        }
+
         private bool ValidateImage(IFormFile? imageFile)
         {
             if (imageFile == null)
@@ -343,7 +435,7 @@ namespace BTL_LT_Web_Nhom_12.Areas.Admin.Controllers
             return true;
         }
 
-        // ================= SAVE IMAGE =================
+        // SAVE IMAGE 
 
         private async Task<string> SaveImageAsync(
             IFormFile imageFile)

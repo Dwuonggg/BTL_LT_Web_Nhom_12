@@ -1,0 +1,182 @@
+﻿
+@{
+    ViewData["Title"] = "Thực đơn API";
+}
+
+<section class="container py-5">
+    <h2 class="mb-4">Thực đơn LỬA MỘC</h2>
+
+    <div class="mb-4">
+        <label for="categoryFilter" class="form-label">
+            Lọc theo danh mục
+        </label>
+
+        <select id="categoryFilter" class="form-select">
+            <option value="">Tất cả danh mục</option>
+        </select>
+    </div>
+
+    <p id="message" class="text-muted" role="status"></p>
+
+    <div id="foodList" class="row g-4"></div>
+</section>
+
+@section Scripts {
+    <script>
+        const categoryFilter =
+            document.getElementById("categoryFilter");
+
+        const foodList =
+            document.getElementById("foodList");
+
+        const message =
+            document.getElementById("message");
+
+        const money = value =>
+            Number(value).toLocaleString("vi-VN") + "đ";
+//get categories
+        async function loadCategories() {
+            const response = await fetch("/api/categories");
+
+            if (!response.ok)
+                throw new Error("Không tải được danh mục.");
+
+            const categories = await response.json();
+
+            categories.forEach(category => {
+                const option = document.createElement("option");
+
+                option.value = category.categoryId;
+                option.textContent = category.name;
+
+                categoryFilter.appendChild(option);
+            });
+        }
+//get foods
+        async function loadFoods(categoryId = "") {
+            message.textContent = "Đang tải món ăn...";
+            foodList.replaceChildren();
+
+            let url = "/api/foods";
+
+            if (categoryId) {
+                url += "?categoryId=" +
+                    encodeURIComponent(categoryId);
+            }
+
+            try {
+                const response = await fetch(url);
+
+                if (!response.ok)
+                    throw new Error("Không tải được món ăn.");
+
+                const foods = await response.json();
+
+                message.textContent = foods.length === 0
+                    ? "Không có món ăn trong danh mục này."
+                    : "";
+
+                foods.forEach(food => {
+
+                    // Cột Bootstrap
+                    const col = document.createElement("div");
+                    col.className = "col-sm-6 col-lg-4 col-xl-3";
+
+                    // Card sản phẩm
+                    const card = document.createElement("div");
+                    card.className =
+                        "card h-100 shadow-sm overflow-hidden";
+
+                    // Ảnh món ăn
+                    const img = document.createElement("img");
+
+                    img.src = food.imageUrl
+                        ? food.imageUrl
+                        : "/images/no-image.png";
+
+                    img.alt = food.name;
+                    img.className = "card-img-top";
+                    img.loading = "lazy";
+
+                    img.style.height = "210px";
+                    img.style.objectFit = "cover";
+                    img.style.width = "100%";
+
+                    img.onerror = function () {
+                        this.onerror = null;
+                        this.style.display = "none";
+                    };
+
+                    // Nội dung card
+                    const body = document.createElement("div");
+                    body.className = "card-body d-flex flex-column";
+
+                    // Tên món
+                    const name = document.createElement("h5");
+                    name.className = "card-title fw-bold";
+                    name.textContent = food.name;
+
+                    // Mô tả
+                    const description = document.createElement("p");
+                    description.className =
+                        "card-text text-muted small";
+
+                    description.textContent =
+                        food.description ||
+                        "Món ngon được chuẩn bị tại LỬA MỘC.";
+
+                    // Giá bán
+                    const price = document.createElement("p");
+                    price.className =
+                        "fw-bold text-danger fs-5 mt-auto";
+
+                    price.textContent = money(food.price);
+
+                    // Nút xem chi tiết
+                    const detail = document.createElement("a");
+
+                    detail.href = "/Menu/Details/" +
+                        encodeURIComponent(food.foodId);
+
+                    detail.className = "btn btn-brand w-100";
+                    detail.textContent = "Xem chi tiết";
+
+                    // Ghép các phần tử
+                    body.append(
+                        name,
+                        description,
+                        price,
+                        detail
+                    );
+
+                    card.append(img, body);
+                    col.appendChild(card);
+                    foodList.appendChild(col);
+                });
+
+            } catch (error) {
+                message.textContent =
+                    error.message || "Có lỗi xảy ra.";
+            }
+        }
+//lọc danh mục
+        categoryFilter.addEventListener(
+            "change",
+            function () {
+                loadFoods(this.value);
+            }
+        );
+
+        async function initialize() {
+            try {
+                await loadCategories();
+            } catch (error) {
+                message.textContent = error.message;
+            }
+
+            await loadFoods();
+        }
+
+        initialize();
+    </script>
+}
