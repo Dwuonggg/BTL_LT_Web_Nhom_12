@@ -71,11 +71,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 ).WithStaticAssets();
-foreach (var endpoint in app.Services
-    .GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>()
-    .Endpoints)
-{
-    Console.WriteLine($"ROUTE: {endpoint.DisplayName}");
-}
-app.MapGet("/test-customer", () => "SERVER CUSTOMER OK");
+
 app.Run();
