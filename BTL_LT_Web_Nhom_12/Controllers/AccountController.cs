@@ -673,10 +673,34 @@ namespace BTL_LT_Web_Nhom_12.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Customer")]
-        public IActionResult Profile()
+
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> Profile()
         {
-            return View();
+            var idClaim = User.FindFirst(
+                ClaimTypes.NameIdentifier
+            )?.Value;
+
+            if (!int.TryParse(idClaim, out int customerId))
+            {
+                return Challenge();
+            }
+
+            var customer = await _context.Customers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c =>
+                    c.CustomerId == customerId &&
+                    c.IsActive);
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return View(customer);
         }
+
 
         [HttpPost]
         [Authorize]

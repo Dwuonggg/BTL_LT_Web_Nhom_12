@@ -1,8 +1,8 @@
-﻿@{
-    ViewData["Title"] = "Tài khoản của tôi";
+﻿
+@model BTL_LT_Web_Nhom_12.Models.Account.Customer
 
-    bool isCustomer = User.Identity?.IsAuthenticated == true
-                      && User.IsInRole("Customer");
+@{
+    ViewData["Title"] = "Tài khoản của tôi";
 }
 
 <section class="section container">
@@ -15,56 +15,56 @@
 
         <h1 class="mb-4">Thông tin tài khoản</h1>
 
-        @if (isCustomer)
-        {
-            <div class="profile-card">
+        <div class="profile-card">
 
-                <h4>Thông tin cá nhân</h4>
+            <h4>Thông tin cá nhân</h4>
 
-                <div class="profile-info">
-                    <span>Họ tên</span>
-                    <strong>@User.Identity?.Name</strong>
-                </div>
-
-                <hr />
-
-                <h4 class="mt-4">Quản lý đơn hàng</h4>
-
-                <p class="text-muted">
-                    Xem lịch sử mua hàng và theo dõi
-                    trạng thái giao hàng của bạn.
-                </p>
-
-                <a asp-area=""
-                   asp-controller="Order"
-                   asp-action="Index"
-                   class="btn btn-brand">
-                    Đơn hàng của tôi
-                </a>
+            <div class="profile-info">
+                <span>Họ và tên</span>
+                <strong>@Model.FullName</strong>
             </div>
-        }
-        else
-        {
-            <div class="profile-card">
-                <h4>Bạn chưa đăng nhập tài khoản Customer</h4>
 
-                <p class="text-muted">
-                    Vui lòng đăng nhập để xem thông tin cá nhân
-                    và đơn hàng.
-                </p>
-
-                <a asp-area=""
-                   asp-controller="Account"
-                   asp-action="Login"
-                   class="btn btn-brand">
-                    Đăng nhập
-                </a>
+            <div class="profile-info">
+                <span>Số điện thoại</span>
+                <strong>@Model.Phone</strong>
             </div>
-        }
+
+            <div class="profile-info">
+                <span>Ngày đăng ký</span>
+                <strong>
+                    @Model.CreatedAt.ToString("dd/MM/yyyy")
+                </strong>
+            </div>
+
+            <div class="profile-info">
+                <span>Trạng thái tài khoản</span>
+                <strong>
+                    @(Model.IsActive ? "Đang hoạt động" : "Ngừng hoạt động")
+                </strong>
+            </div>
+
+            <hr />
+
+            <h4 class="mt-4">Quản lý đơn hàng</h4>
+
+            <p class="text-muted">
+                Xem lịch sử mua hàng và theo dõi
+                trạng thái giao hàng của bạn.
+            </p>
+
+            <a asp-area=""
+               asp-controller="Order"
+               asp-action="Index"
+               class="btn btn-brand">
+                Đơn hàng của tôi
+            </a>
+
+        </div>
 
     </div>
 
 </section>
+
 @section Styles {
     <link rel="stylesheet"
           href="~/css/account.css"
